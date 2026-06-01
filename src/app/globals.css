@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 180 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 180 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 180 10% 10%;
+    --primary: 174 59% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 180 5% 96%;
+    --muted-foreground: 180 5% 45%;
+    --accent: 174 59% 95%;
+    --accent-foreground: 174 59% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 180 5% 88%;
+    --input: 180 5% 88%;
+    --ring: 174 59% 40%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 180 10% 8%;
+    --foreground: 180 5% 92%;
+    --card: 180 10% 12%;
+    --card-foreground: 180 5% 92%;
+    --popover: 180 10% 12%;
+    --popover-foreground: 180 5% 92%;
+    --primary: 174 59% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 84% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 180 10% 16%;
+    --muted-foreground: 180 5% 60%;
+    --accent: 174 59% 15%;
+    --accent-foreground: 174 59% 70%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 180 10% 20%;
+    --input: 180 10% 20%;
+    --ring: 174 59% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
