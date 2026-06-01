@@ -164,3 +164,37 @@ export async function deleteMessage(id: string) {
   await deleteDoc(doc(db, "messages", id));
   logger.info("Firestore: message deleted", { id });
 }
+
+// ─── Admins ───────────────────────────────────────────────
+export async function getAllAdmins() {
+  const snap = await getDocs(collectionRef("admins"));
+  return snap.docs.map((d) => docToData<import("@/types/admin").Admin>(d));
+}
+
+export async function getAdminById(id: string) {
+  const snap = await getDoc(doc(db, "admins", id));
+  if (!snap.exists()) return null;
+  return docToData<import("@/types/admin").Admin>(snap);
+}
+
+export async function getAdminByEmail(email: string) {
+  const q = query(collectionRef("admins"), where("email", "==", email), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return docToData<import("@/types/admin").Admin>(snap.docs[0]);
+}
+
+export async function createAdmin(data: import("@/types/admin").Admin) {
+  await setDoc(doc(db, "admins", data.id), data);
+  logger.info("Firestore: admin created", { id: data.id, email: data.email });
+}
+
+export async function updateAdmin(id: string, data: Partial<import("@/types/admin").Admin>) {
+  await updateDoc(doc(db, "admins", id), data);
+  logger.info("Firestore: admin updated", { id });
+}
+
+export async function deleteAdmin(id: string) {
+  await deleteDoc(doc(db, "admins", id));
+  logger.info("Firestore: admin deleted", { id });
+}

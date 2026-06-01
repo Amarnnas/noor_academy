@@ -14,7 +14,7 @@
 | UI Primitives | Radix UI | (avatar, dialog, dropdown, select, toast, tabs) |
 | Utility | clsx + tailwind-merge + cva | latest |
 | Auth | NextAuth (Auth.js) | 4.24.14 |
-| Auth/DB (optional) | Firebase (Firestore) | 11.7.1 |
+| Auth/DB | Firebase (Firestore) | 11.7.1 |
 | PDF | jsPDF + html2canvas | 4.2.1 / 1.4.1 |
 | Hosting | Vercel | - |
 | DB (pending) | Google Cloud Firestore | - |
@@ -52,6 +52,7 @@ src/
 │   │   │       ├── testimonials/page.tsx # Testimonials list
 │   │   │       ├── orders/page.tsx   # Orders table with status badges
 │   │   │       ├── certificates/page.tsx # PDF certificate generator
+│   │   │       ├── admins/page.tsx   # Admin management (Firestore CRUD + permissions)
 │   │   │       └── messages/page.tsx # Contact messages list
 │   │   ├── api/                      # REST API handlers
 │   │   │   ├── auth/[...nextauth]/route.ts  # NextAuth handler
@@ -73,11 +74,16 @@ src/
 ├── lib/
 │   ├── utils.ts                  # cn() helper
 │   ├── constants.ts              # SITE config, NAV_LINKS, SOCIAL_LINKS
-│   └── logger.ts                 # Async info/warn/error logger
+│   ├── logger.ts                 # Async info/warn/error logger
+│   ├── firebase.ts               # Firebase config + Firestore export (hardcoded keys)
+│   ├── firestore.ts              # Firestore CRUD operations for all collections
+│   ├── permissions.ts            # Admin permission labels + check utilities
+│   └── auth.ts                   # NextAuth config (credentials + Google providers, Firestore admin lookup)
 ├── types/
 │   ├── course.ts                 # Course, CurriculumItem
 │   ├── instructor.ts             # Instructor
 │   ├── testimonial.ts            # Testimonial
+│   ├── admin.ts                  # Admin, AdminPermission
 │   └── user.ts                   # User, AuthState, ContactMessage, Order
 └── data/                         # Static mock data
     ├── courses.ts                # 6 courses + helper functions
@@ -101,12 +107,13 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
   │   └── Auth: Login (NextAuth credentials/Google) / Register / Reset Password
   ├── (dashboard) → Protected by middleware.ts (redirect to /auth/login if unauthenticated)
   │   ├── / → Stats cards + quick overview + recent courses
-  │   ├── /courses → Data table (all courses)
-  │   ├── /instructors → Card grid
-  │   ├── /testimonials → Card list with star ratings
-  │   ├── /orders → Table with status badges
-  │   ├── /certificates → CertificateGenerator (jsPDF + html2canvas)
-  │   └── /messages → Message list with read/unread indicator
+  │   ├── /courses → Data table (all courses, requires manage_courses)
+  │   ├── /instructors → Card grid (requires manage_instructors)
+  │   ├── /testimonials → Card list with star ratings (requires manage_testimonials)
+  │   ├── /orders → Table with status badges (requires manage_orders)
+  │   ├── /certificates → CertificateGenerator (jsPDF + html2canvas, requires manage_certificates)
+  │   ├── /messages → Message list with read/unread indicator (requires manage_messages)
+  │   └── /admins → Admin CRUD table with permission checkboxes (requires manage_admins)
   ├── /api/
   │   ├── /auth/[...nextauth] → NextAuth (credentials + Google providers)
   │   ├── /courses → GET (list + filter/search)
@@ -121,7 +128,11 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 | Item | Status | Notes |
 |---|---|---|
 | Firebase Firestore integration | DONE | src/lib/firebase.ts created with config + Firestore export |
-| Google OAuth real keys | PENDING | Requires Firebase Console + Google Cloud Console setup |
+| Google OAuth real keys | PENDING | Requires Google Cloud Console setup for OAuth consent + credentials |
+| Admin management (Firestore CRUD) | DONE | /dashboard/admins page with add/edit/delete, permission checkboxes |
+| Permission-based sidebar filtering | DONE | Sidebar links hidden per user permissions |
+| Firestore-based admin auth | DONE | auth.ts checks Firestore admins collection for credentials + Google login |
+| permissions.ts utility | DONE | Permission labels, check function, default sets |
 | e2e tests (Playwright/Cypress) | PENDING | Basic unit test created in __tests__/ |
 | Image placeholders → real media | DONE | Replaced with /images/logo.png across all data files |
 | PDF Certificate generation | DONE | jsPDF + html2canvas (scale 4) in /dashboard/certificates, A4 size, border, stamp/signature upload |

@@ -3,24 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BookOpen, Users, Star, ShoppingCart, MessageSquare, Award, Menu, X, LogOut, GraduationCap } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Star, ShoppingCart, MessageSquare, Award, Shield, Menu, X, LogOut, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasPermission } from "@/lib/permissions";
+import type { AdminPermission } from "@/types/admin";
 
-const sidebarLinks = [
+interface SidebarLink {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  href: string;
+  permission?: AdminPermission;
+}
+
+const sidebarLinks: SidebarLink[] = [
   { icon: LayoutDashboard, label: "الإحصائيات", href: "/dashboard" },
-  { icon: BookOpen, label: "الدورات", href: "/dashboard/courses" },
-  { icon: Users, label: "المدربون", href: "/dashboard/instructors" },
-  { icon: Star, label: "آراء الطلاب", href: "/dashboard/testimonials" },
-  { icon: ShoppingCart, label: "الطلبات", href: "/dashboard/orders" },
-  { icon: Award, label: "الشهادات", href: "/dashboard/certificates" },
-  { icon: MessageSquare, label: "الرسائل", href: "/dashboard/messages" },
+  { icon: BookOpen, label: "الدورات", href: "/dashboard/courses", permission: "manage_courses" },
+  { icon: Users, label: "المدربون", href: "/dashboard/instructors", permission: "manage_instructors" },
+  { icon: Star, label: "آراء الطلاب", href: "/dashboard/testimonials", permission: "manage_testimonials" },
+  { icon: ShoppingCart, label: "الطلبات", href: "/dashboard/orders", permission: "manage_orders" },
+  { icon: Award, label: "الشهادات", href: "/dashboard/certificates", permission: "manage_certificates" },
+  { icon: MessageSquare, label: "الرسائل", href: "/dashboard/messages", permission: "manage_messages" },
+  { icon: Shield, label: "المشرفون", href: "/dashboard/admins", permission: "manage_admins" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const userPermissions = ((session?.user as any)?.permissions || []) as string[];
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex">
@@ -30,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}>
         <div className="flex flex-col h-full">
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {sidebarLinks.map((link) => {
+            {sidebarLinks.filter((link) => !link.permission || hasPermission(userPermissions, link.permission)).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link

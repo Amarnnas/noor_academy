@@ -4,6 +4,7 @@ export interface User {
   email: string;
   password: string;
   role: "admin" | "student";
+  permissions?: string[];
   avatar?: string;
   createdAt: string;
 }

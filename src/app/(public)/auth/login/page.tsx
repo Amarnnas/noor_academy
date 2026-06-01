@@ -71,11 +71,9 @@ export default function LoginPage() {
               {loading ? "جاري تسجيل الدخول..." : <><LogIn className="h-4 w-4" />دخول</>}
             </Button>
 
-            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-              <Button type="button" variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
-                تسجيل الدخول بقوقل
-              </Button>
-            )}
+            <Button type="button" variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
+              تسجيل الدخول بقوقل
+            </Button>
           </form>
 
           <div className="mt-4 text-center space-y-2">
