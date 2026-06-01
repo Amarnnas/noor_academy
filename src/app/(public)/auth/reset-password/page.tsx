@@ -13,6 +13,7 @@ export default function ResetPasswordPage() {
   const [step, setStep] = useState<"email" | "otp" | "done">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export default function ResetPasswordPage() {
       const res = await fetch("/api/auth/otp-send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, type: "reset" }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "حدث خطأ"); setLoading(false); return; }
+      setOtpCode(data.code || "");
       logger.info("OTP sent for password reset", { email });
       setStep("otp");
     } catch (err) {
@@ -72,6 +74,12 @@ export default function ResetPasswordPage() {
                 <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
                   تم إرسال كود التحقق إلى <span className="font-medium text-teal-600 dark:text-teal-400">{email}</span>
                 </p>
+                {otpCode && (
+                  <div className="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950 text-center">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">كود التحقق (للاختبار)</p>
+                    <p className="text-2xl font-bold tracking-widest text-amber-700 dark:text-amber-300">{otpCode}</p>
+                  </div>
+                )}
               </div>
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="space-y-2">

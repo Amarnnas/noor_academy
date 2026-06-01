@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +39,19 @@ export default function LoginPage() {
       logger.error("Login error", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError("");
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (err) {
+      setError("تسجيل الدخول بقوقل غير متاح حالياً");
+      logger.error("Google login error", err);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -71,8 +85,8 @@ export default function LoginPage() {
               {loading ? "جاري تسجيل الدخول..." : <><LogIn className="h-4 w-4" />دخول</>}
             </Button>
 
-            <Button type="button" variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
-              تسجيل الدخول بقوقل
+            <Button type="button" variant="outline" className="w-full gap-2" disabled={googleLoading} onClick={handleGoogleLogin}>
+              {googleLoading ? "جاري الاتصال..." : "تسجيل الدخول بقوقل"}
             </Button>
           </form>
 

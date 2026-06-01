@@ -16,9 +16,9 @@ export default function RegisterPage() {
   const [step, setStep] = useState<"form" | "otp">("form");
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", phone: "" });
   const [otp, setOtp] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +31,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/otp-send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.email, type: "register" }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "حدث خطأ"); setLoading(false); return; }
-      setOtpSent(true);
+      setOtpCode(data.code || "");
       setStep("otp");
       logger.info("OTP sent for registration", { email: form.email });
     } catch (err) {
@@ -110,6 +110,12 @@ export default function RegisterPage() {
                 <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
                   تم إرسال كود التحقق إلى <span className="font-medium text-teal-600 dark:text-teal-400">{form.email}</span>
                 </p>
+                {otpCode && (
+                  <div className="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950 text-center">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">كود التحقق (للاختبار)</p>
+                    <p className="text-2xl font-bold tracking-widest text-amber-700 dark:text-amber-300">{otpCode}</p>
+                  </div>
+                )}
               </div>
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="space-y-2">

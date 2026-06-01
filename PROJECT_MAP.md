@@ -116,6 +116,8 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
   │   └── /admins → Admin CRUD table with permission checkboxes (requires manage_admins)
   ├── /api/
   │   ├── /auth/[...nextauth] → NextAuth (credentials + Google providers)
+  │   ├── /auth/otp-send → POST (send OTP code to email)
+  │   ├── /auth/otp-verify → POST (verify OTP code)
   │   ├── /courses → GET (list + filter/search)
   │   ├── /instructors → GET (list)
   │   ├── /contact → POST (submit form)
@@ -133,7 +135,9 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 | Permission-based sidebar filtering | DONE | Sidebar links hidden per user permissions |
 | Firestore-based admin auth | DONE | auth.ts checks Firestore admins collection for credentials + Google login |
 | permissions.ts utility | DONE | Permission labels, check function, default sets |
-| e2e tests (Playwright/Cypress) | PENDING | Basic unit test created in __tests__/ |
+| OTP email verification system | DONE | src/lib/otp.ts + API routes + OTP step in register/reset-password |
+| SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars |
+| Admin page loading bug fix | DONE | Added status check for useSession loading state |
 | Image placeholders → real media | DONE | Replaced with /images/logo.png across all data files |
 | PDF Certificate generation | DONE | jsPDF + html2canvas (scale 4) in /dashboard/certificates, A4 size, border, stamp/signature upload |
 | Google Maps embed | DONE | Real iframe with API key placeholder in contact page |
