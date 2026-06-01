@@ -14,7 +14,7 @@ import { PERMISSION_LABELS, ALL_PERMISSIONS, hasPermission } from "@/lib/permiss
 import type { Admin, AdminPermission } from "@/types/admin";
 
 export default function DashboardAdminsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,13 @@ export default function DashboardAdminsPage() {
   const userPermissions = ((session?.user as any)?.permissions || []) as string[];
 
   useEffect(() => {
+    if (status === "loading") return;
     if (!hasPermission(userPermissions, "manage_admins")) {
       router.push("/dashboard");
       return;
     }
     loadAdmins();
-  }, [session]);
+  }, [session, status]);
 
   const loadAdmins = async () => {
     try {
@@ -112,7 +113,7 @@ export default function DashboardAdminsPage() {
     );
   };
 
-  if (loading) return <div className="text-center py-12 text-[hsl(var(--muted-foreground))]">جاري التحميل...</div>;
+  if (loading || status === "loading") return <div className="text-center py-12 text-[hsl(var(--muted-foreground))]">جاري التحميل...</div>;
 
   return (
     <div className="space-y-6">
