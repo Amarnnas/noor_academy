@@ -14,6 +14,7 @@
 | UI Primitives | Radix UI | (avatar, dialog, dropdown, select, toast, tabs) |
 | Utility | clsx + tailwind-merge + cva | latest |
 | Auth | NextAuth (Auth.js) | 4.24.14 |
+| Auth/DB (optional) | Firebase (Firestore) | 11.7.1 |
 | PDF | jsPDF + html2canvas | 4.2.1 / 1.4.1 |
 | Hosting | Vercel | - |
 | DB (pending) | Google Cloud Firestore | - |
@@ -119,7 +120,7 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 
 | Item | Status | Notes |
 |---|---|---|
-| Firebase Firestore integration | PENDING | .env.example ready, lib/firebase.ts needs creation |
+| Firebase Firestore integration | DONE | src/lib/firebase.ts created with config + Firestore export |
 | Google OAuth real keys | PENDING | Requires Firebase Console + Google Cloud Console setup |
 | e2e tests (Playwright/Cypress) | PENDING | Basic unit test created in __tests__/ |
 | Image placeholders → real media | DONE | Replaced with /images/logo.png across all data files |
