@@ -128,7 +128,7 @@ export default function DashboardCoursesPage() {
                   <Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="مثل: 40 ساعة" />
                 </div>
                 <div className="space-y-2">
-                  <Label>السعر (ريال)</Label>
+                  <Label>السعر (جنيه سوداني)</Label>
                   <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="السعر" />
                 </div>
               </div>
