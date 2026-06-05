@@ -117,8 +117,12 @@ export function Hero() {
               <div className="absolute inset-0 flex items-center justify-center p-12">
                 <Image src="/images/h.jpeg" alt="أكاديمية نور" fill className="object-contain p-12 opacity-20" />
                 <div className="relative text-center">
+                  
+                  <!--
                   <h3 className="text-2xl font-bold text-teal-700 dark:text-teal-300 mb-2">تعلم أي لغة</h3>
                   <p className="text-[hsl(var(--muted-foreground))]">مع مدربين معتمدين من جميع أنحاء العالم</p>
+                    -->
+                    
                 </div>
               </div>
             </div>
