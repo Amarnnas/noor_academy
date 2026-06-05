@@ -25,7 +25,7 @@ export function CTASection() {
             </p>
             <Link href="/auth/register">
               <Button size="lg" variant="secondary" className="gap-2 bg-white text-teal-700 hover:bg-white/90 shadow-lg">
-                سجل الآن مجاناً
+                سجل الآن 
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
