@@ -82,7 +82,7 @@ export default function DashboardCoursesPage() {
                   <td className="p-4">
                     <span className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs">{course.rating}</span>
                   </td>
-                  <td className="p-4 font-medium">{course.price} ريال</td>
+                  <td className="p-4 font-medium">{course.price} جنيه سوداني</td>
                   <td className="p-4">
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEdit(course)} className="p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-teal-600" aria-label="تعديل"><Pencil className="h-4 w-4" /></button>
