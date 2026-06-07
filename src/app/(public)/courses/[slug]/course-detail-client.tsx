@@ -112,7 +112,7 @@ export function CourseDetailClient({ course }: { course: Course }) {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
               <div className="sticky top-24 rounded-2xl border bg-[hsl(var(--card))] p-6 space-y-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">{course.price} جنيه سوداني </div>
+                  <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">{course.price} جنيه  </div>
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">الدفع مرة واحدة</p>
                 </div>
 
