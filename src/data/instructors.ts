@@ -3,7 +3,7 @@ import { Instructor } from "@/types/instructor";
 export const instructors: Instructor[] = [
   {
     id: "1",
-    name: "د. أحمد السالم",
+    name: "  أ. نور الدين",
     title: "مدرب لغة إنجليزية معتمد",
     bio: "دكتوراه في تدريس اللغة الإنجليزية من جامعة أكسفورد. خبرة أكثر من 15 عاماً في تدريس الإنجليزية لغير الناطقين بها. حاصل على شهادة CELTA وDELTA.",
     image: "/images/logo.png",
