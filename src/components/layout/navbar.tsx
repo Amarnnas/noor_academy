@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
-import { NAV_LINKS, SITE } from "@/lib/constants";
+import { BRAND_ASSETS, NAV_LINKS, SITE } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -19,13 +20,16 @@ export function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    logger.info("Navbar symbol logo loaded", { src: BRAND_ASSETS.symbol });
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[hsl(var(--background))/0.95] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))/0.6]">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src="/images/logo.png" alt={SITE.name} width={48} height={48} className="h-12 w-auto" />
+          <Image src={BRAND_ASSETS.symbol} alt={SITE.name} width={48} height={48} className="h-12 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">

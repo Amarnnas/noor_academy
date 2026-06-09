@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Course } from "@/types/course";
 import { getInstructorById } from "@/data/instructors";
+import { formatCoursePrice } from "@/lib/currency";
 import { logger } from "@/lib/logger";
 
 const levelColors: Record<string, "teal" | "emerald" | "default"> = {
@@ -25,6 +26,9 @@ export function CourseDetailClient({ course }: { course: Course }) {
   const instructor = getInstructorById(course.instructorId);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    logger.info("Course detail uses full-cover image and SDG price", { course: course.slug });
+  }, [course.slug]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +53,7 @@ export function CourseDetailClient({ course }: { course: Course }) {
             <div className="lg:col-span-2 space-y-8">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <div className="aspect-video rounded-2xl relative bg-[hsl(var(--muted))] mb-6 overflow-hidden">
-                  <Image src={course.image} alt={course.title} fill className="object-contain p-8" />
+                  <Image src={course.image} alt={course.title} fill className="object-cover" />
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <Badge variant={levelColors[course.level]}>{course.level}</Badge>
@@ -112,7 +116,7 @@ export function CourseDetailClient({ course }: { course: Course }) {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
               <div className="sticky top-24 rounded-2xl border bg-[hsl(var(--card))] p-6 space-y-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">{course.price} جنيه  </div>
+                  <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">{formatCoursePrice(course.price)}</div>
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">الدفع مرة واحدة</p>
                 </div>
 

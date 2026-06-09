@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { getFeaturedCourses } from "@/data/courses";
+import { formatCoursePrice } from "@/lib/currency";
+import { logger } from "@/lib/logger";
 
 const levelColors = {
   "مبتدئ": "teal" as const,
@@ -18,6 +21,9 @@ const levelColors = {
 
 export function CoursesPreview() {
   const featured = getFeaturedCourses();
+  useEffect(() => {
+    logger.info("Featured courses preview uses full-cover images and SDG prices", { count: featured.length });
+  }, [featured.length]);
 
   return (
     <section className="py-20 bg-[hsl(var(--muted))]/30">
@@ -38,7 +44,7 @@ export function CoursesPreview() {
               <Link href={`/courses/${course.slug}`} className="group block">
                 <div className="rounded-2xl border bg-[hsl(var(--card))] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <div className="aspect-video relative bg-[hsl(var(--muted))]">
-                    <Image src={course.image} alt={course.title} fill className="object-contain p-4" />
+                    <Image src={course.image} alt={course.title} fill className="object-cover" />
                     <Badge variant={levelColors[course.level]} className="absolute top-3 right-3">
                       {course.level}
                     </Badge>
@@ -60,6 +66,7 @@ export function CoursesPreview() {
                         {course.duration}
                       </span>
                     </div>
+                    <div className="font-semibold text-teal-600 dark:text-teal-400">{formatCoursePrice(course.price)}</div>
                   </div>
                 </div>
               </Link>

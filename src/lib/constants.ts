@@ -8,6 +8,11 @@ export const SITE = {
   address: "كمبالا ، هام تاور - جوار جامعة ماكرري ",
 };
 
+export const BRAND_ASSETS = {
+  symbol: "/images/just-logo.png",
+  full: "/images/noorpro.png",
+};
+
 export const NAV_LINKS = [
   { label: "الرئيسية", href: "/" },
   { label: "الدورات", href: "/courses" },

@@ -1,10 +1,11 @@
 import { Testimonial } from "@/types/testimonial";
+import { BRAND_ASSETS } from "@/lib/constants";
 
 export const testimonials: Testimonial[] = [
   {
     id: "1",
     name: "نورة الشمري",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالبة دورة الإنجليزية",
     content: "تجربة رائعة! تعلمت الإنجليزية بطلاقة بفضل الله ثم بفضل المدربين المحترفين. المنهج ممتاز والأسعار معقولة جداً.",
     rating: 5,
@@ -12,7 +13,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "2",
     name: "فيصل العتيبي",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالب دورة الألمانية",
     content: "صراحة واثق من مستواي الآن في الألمانية. الأكاديمية تقدم محتوى قيم ومدربين على مستوى عالي جداً من الكفاءة.",
     rating: 5,
@@ -20,7 +21,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "3",
     name: "لمى الغامدي",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالبة دورة الفرنسية",
     content: "من أفضل المراكز التعليمية التي تعاملت معها. الدعم المستمر والمتابعة الفردية هي ما يميز نور عن غيرها.",
     rating: 5,
@@ -28,7 +29,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "4",
     name: "مهند الجهني",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالب دورة الإسبانية",
     content: "أسلوب التدريس ممتع وتفاعلي. كنت أظن تعلم اللغات صعباً لكن نور غيرت مفهومي تماماً. أنصح بها بشدة.",
     rating: 4,
@@ -36,7 +37,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "5",
     name: "سارة القحطاني",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالبة IELTS",
     content: "الحمد لله حصلت على 7.5 في اختبار IELTS بفضل الله ثم بفضل الدورة المكثفة والنصائح القيمة من المدرب د.أحمد.",
     rating: 5,
@@ -44,7 +45,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "6",
     name: "عبدالعزيز المالكي",
-    avatar: "/images/logo.png",
+    avatar: BRAND_ASSETS.symbol,
     role: "طالب دورة العربية",
     content: "دورة العربية للناطقين بغيرها كانت ممتازة. زوجتي أجنبية واستفادت كثيراً وأصبحت تتحدث العربية بثقة.",
     rating: 5,

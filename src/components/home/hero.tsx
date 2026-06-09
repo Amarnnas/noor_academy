@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Play, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SITE } from "@/lib/constants";
+import { BRAND_ASSETS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 
 function AnimatedCounter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -42,6 +43,10 @@ const stats = [
 ];
 
 export function Hero() {
+  useEffect(() => {
+    logger.info("Hero symbol logo loaded", { src: BRAND_ASSETS.symbol });
+  }, []);
+
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
       <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50 dark:from-teal-950 dark:via-background dark:to-emerald-950 -z-10" />
@@ -115,13 +120,10 @@ export function Hero() {
           >
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[hsl(var(--muted))] shadow-2xl shadow-teal-200/50 dark:shadow-teal-900/30">
               <div className="absolute inset-0 flex items-center justify-center p-12">
-                <Image src="/images/h.jpeg" alt="أكاديمية نور" fill className="object-contain p-12 opacity-20" />
+                <Image src={BRAND_ASSETS.symbol} alt="أكاديمية نور" fill className="object-contain p-12 opacity-20" />
                 <div className="relative text-center">
                   
-                  <!--
-                  <h3 className="text-2xl font-bold text-teal-700 dark:text-teal-300 mb-2">تعلم أي لغة</h3>
-                  <p className="text-[hsl(var(--muted-foreground))]">مع مدربين معتمدين من جميع أنحاء العالم</p>
-                    -->
+
                     
                 </div>
               </div>

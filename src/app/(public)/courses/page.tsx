@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { courses, getAllCategories, getCoursesByCategory } from "@/data/courses";
+import { formatCoursePrice } from "@/lib/currency";
+import { logger } from "@/lib/logger";
 
 const levelColors = {
   "مبتدئ": "teal" as const,
@@ -30,6 +32,9 @@ export default function CoursesPage() {
     }
     return result;
   }, [search, category]);
+  useEffect(() => {
+    logger.info("Courses page uses full-cover images and SDG prices", { count: filtered.length });
+  }, [filtered.length]);
 
   return (
     <>
@@ -72,7 +77,7 @@ export default function CoursesPage() {
                   <Link href={`/courses/${course.slug}`} className="group block">
                     <div className="rounded-2xl border bg-[hsl(var(--card))] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <div className="aspect-video relative bg-[hsl(var(--muted))]">
-                        <Image src={course.image} alt={course.title} fill className="object-contain p-4" />
+                        <Image src={course.image} alt={course.title} fill className="object-cover" />
                         <Badge variant={levelColors[course.level]} className="absolute top-3 right-3">{course.level}</Badge>
                       </div>
                       <div className="p-5 space-y-3">
@@ -83,6 +88,7 @@ export default function CoursesPage() {
                           <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{course.studentsCount.toLocaleString()} طالب</span>
                           <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{course.duration}</span>
                         </div>
+                        <div className="font-semibold text-teal-600 dark:text-teal-400">{formatCoursePrice(course.price)}</div>
                       </div>
                     </div>
                   </Link>

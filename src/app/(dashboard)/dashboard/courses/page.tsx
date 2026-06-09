@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BRAND_ASSETS } from "@/lib/constants";
+import { COURSE_CURRENCY, formatCoursePrice } from "@/lib/currency";
 import { logger } from "@/lib/logger";
 import { type Course } from "@/types/course";
 
@@ -37,7 +39,7 @@ export default function DashboardCoursesPage() {
       setCourses(courses.map((c) => c.id === editingId ? { ...c, title: form.title, description: form.description, category: form.category, level: form.level as Course["level"], duration: form.duration, price: Number(form.price) } : c));
       logger.info("Course updated", { id: editingId, title: form.title });
     } else {
-      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: "/images/logo.png", category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
+      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: BRAND_ASSETS.symbol, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
       setCourses([...courses, newCourse]);
       logger.info("Course added", { title: form.title });
     }
@@ -82,7 +84,7 @@ export default function DashboardCoursesPage() {
                   <td className="p-4">
                     <span className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs">{course.rating}</span>
                   </td>
-                  <td className="p-4 font-medium">{course.price} جنيه سوداني</td>
+                  <td className="p-4 font-medium">{formatCoursePrice(course.price)}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEdit(course)} className="p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-teal-600" aria-label="تعديل"><Pencil className="h-4 w-4" /></button>
@@ -128,7 +130,7 @@ export default function DashboardCoursesPage() {
                   <Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="مثل: 40 ساعة" />
                 </div>
                 <div className="space-y-2">
-                  <Label>السعر (جنيه سوداني)</Label>
+                  <Label>السعر ({COURSE_CURRENCY.label})</Label>
                   <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="السعر" />
                 </div>
               </div>

@@ -1,15 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Mail, MapPin, Globe } from "lucide-react";
-import { SITE, NAV_LINKS, SOCIAL_LINKS } from "@/lib/constants";
+import { Phone, Mail, MapPin } from "lucide-react";
+import { SocialIcon } from "@/components/shared/social-icons";
+import { BRAND_ASSETS, SITE, NAV_LINKS, SOCIAL_LINKS } from "@/lib/constants";
 
 export function Footer() {
   const socialIcons = [
-    { label: "فيس بوك", href: SOCIAL_LINKS.facebook },
-    { label: "تويتر", href: SOCIAL_LINKS.twitter },
-    { label: "إنستغرام", href: SOCIAL_LINKS.instagram },
-    { label: "لينكد إن", href: SOCIAL_LINKS.linkedin },
-    { label: "يوتيوب", href: SOCIAL_LINKS.youtube },
+    { label: "فيس بوك", href: SOCIAL_LINKS.facebook, icon: "facebook" as const },
+    { label: "تويتر", href: SOCIAL_LINKS.twitter, icon: "twitter" as const },
+    { label: "إنستغرام", href: SOCIAL_LINKS.instagram, icon: "instagram" as const },
+    { label: "لينكد إن", href: SOCIAL_LINKS.linkedin, icon: "linkedin" as const },
+    { label: "يوتيوب", href: SOCIAL_LINKS.youtube, icon: "youtube" as const },
   ];
 
   return (
@@ -18,16 +19,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/images/logo.png" alt={SITE.name} width={36} height={36} className="h-9 w-auto" />
-              <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{SITE.name}</span>
+              <Image src={BRAND_ASSETS.full} alt={SITE.name} width={180} height={72} className="h-14 w-auto" />
             </Link>
             <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
               وجهتك الأولى لتعلم اللغات عبر الإنترنت. نقدم دورات معتمدة مع أفضل المدربين لتطوير مهاراتك اللغوية.
             </p>
             <div className="flex gap-2">
-              {socialIcons.map(({ label, href }, i) => (
+              {socialIcons.map(({ label, href, icon }, i) => (
                 <a key={i} href={href} target="_blank" rel="noopener noreferrer" title={label} className="p-2 rounded-lg bg-[hsl(var(--muted))] hover:bg-teal-100 dark:hover:bg-teal-900/50 text-[hsl(var(--muted-foreground))] hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-                  <Globe className="h-4 w-4" />
+                  <SocialIcon name={icon} className="h-4 w-4" />
                   <span className="sr-only">{label}</span>
                 </a>
               ))}

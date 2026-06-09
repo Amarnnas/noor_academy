@@ -67,13 +67,15 @@ src/
 │   ├── ui/                       # shadcn-style primitives (button, card, input, badge, avatar, label, select, textarea, toast, skeleton)
 │   ├── layout/                   # navbar, footer, theme-provider, whatsapp-button
 │   ├── shared/                   # section-heading
+│   │   └── social-icons.tsx      # Brand social media SVG icons
 │   ├── home/                     # hero, why-us, courses-preview, cta-section
 │   ├── testimonials/             # testimonial-slider
 │   ├── courses/                  # (empty, logic in page files)
 │   └── dashboard/                # (empty, logic in page files)
 ├── lib/
 │   ├── utils.ts                  # cn() helper
-│   ├── constants.ts              # SITE config, NAV_LINKS, SOCIAL_LINKS
+│   ├── constants.ts              # SITE config, BRAND_ASSETS, NAV_LINKS, SOCIAL_LINKS
+│   ├── currency.ts               # Course price currency label/formatter (SDG)
 │   ├── logger.ts                 # Async info/warn/error logger
 │   ├── firebase.ts               # Firebase config + Firestore export (hardcoded keys)
 │   ├── firestore.ts              # Firestore CRUD operations for all collections
@@ -135,10 +137,11 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 | Permission-based sidebar filtering | DONE | Sidebar links hidden per user permissions |
 | Firestore-based admin auth | DONE | auth.ts checks Firestore admins collection for credentials + Google login |
 | permissions.ts utility | DONE | Permission labels, check function, default sets |
-| OTP email verification system | DONE | src/lib/otp.ts + API routes + OTP step in register/reset-password |
-| SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars |
+| OTP email verification system | DONE | src/lib/otp.ts + in-memory store (no Firebase dep) + API routes + OTP step in register/reset-password |
+| SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars, falls back to showing code in UI |
 | Admin page loading bug fix | DONE | Added status check for useSession loading state |
-| Image placeholders → real media | DONE | Replaced with /images/logo.png across all data files |
+| Google button error handling | DONE | Added loading state + catch block with user-facing error message |
+| Image placeholders → real media | DONE | Replaced with shared brand symbol asset across all data files |
 | PDF Certificate generation | DONE | jsPDF + html2canvas (scale 4) in /dashboard/certificates, A4 size, border, stamp/signature upload |
 | Google Maps embed | DONE | Real iframe with API key placeholder in contact page |
 | JWT/auth (NextAuth) | DONE | Credentials + Google providers, middleware guard |
@@ -146,7 +149,7 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 | API route handlers | DONE | GET /api/courses, /api/instructors, POST /api/contact, /api/orders |
 | Vercel deployment config | DONE | vercel.json with env variable references |
 | .env.example | DONE | Template with all required env vars |
-| Logo in navbar/footer | DONE | Image component from /images/logo.png |
+| Logo in navbar/footer | DONE | Navbar uses /images/just-logo.png symbol; footer uses /images/noorpro.png full logo |
 | Test files | DONE | Basic __tests__/basic.test.ts created |
 | Loading skeletons | DONE | Skeleton component created |
 | Toast notifications | DONE | Toast component created |
@@ -172,3 +175,7 @@ User → Next.js Router → middleware.ts (guard /dashboard/*)
 | Certificate: validate student registration + payment | DONE | Select student from orders, reject if not confirmed/paid |
 | Certificate: orientation (portrait/landscape) | DONE | Radio buttons switch preview + jsPDF orientation |
 | Certificate: purpose DPI (print 300 / social 72) | DONE | Radio buttons control html2canvas scale (4 vs 1) |
+| Course images 100% fill | DONE | Public course cards and detail hero use object-cover without padding |
+| Social media brand icons | DONE | Footer uses shared SVG brand icons instead of generic globe icon |
+| Course currency | DONE | Course prices display with shared Sudanese pound formatter |
+| Brand logo assets | DONE | BRAND_ASSETS maps symbol/full logos to public/images/just-logo.png and public/images/noorpro.png |
