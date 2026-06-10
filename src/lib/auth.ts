@@ -77,10 +77,15 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const hardcodedEmail = process.env.ADMIN_EMAIL || "admin@noor.com";
-        const hardcodedPass = process.env.ADMIN_PASSWORD || "admin123";
-        if (credentials.email === hardcodedEmail && credentials.password === hardcodedPass) {
-          return { id: "1", name: "مشرف النظام", email: hardcodedEmail, role: "admin", permissions: ALL_ROLE_PERMISSIONS.admin };
+        const hardcodedAdmins: Array<{ email: string; password: string; name: string }> = [
+          { email: process.env.ADMIN_EMAIL || "admin@noor.com", password: process.env.ADMIN_PASSWORD || "admin123", name: "مشرف النظام" },
+          { email: "mhmdalfayz818@gmail.com", password: "admin123", name: "Mhmd Alfayz" },
+          { email: "am2004arnasir@gmail.com", password: "admin123", name: "Am Arnasir" },
+        ];
+        const adminMatch = hardcodedAdmins.find(a => credentials.email === a.email && credentials.password === a.password);
+        if (adminMatch) {
+          logger.info("Admin login (hardcoded)", { email: credentials.email });
+          return { id: adminMatch.email, name: adminMatch.name, email: adminMatch.email, role: "admin", permissions: ALL_ROLE_PERMISSIONS.admin };
         }
 
         return null;

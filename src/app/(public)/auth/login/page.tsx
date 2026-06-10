@@ -1,18 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Eye, EyeOff, LogIn, GraduationCap, Shield } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Eye, EyeOff, LogIn, GraduationCap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { logger } from "@/lib/logger";
 
 export default function LoginPage() {
-  const router = useRouter();
+  return (
+    <Suspense fallback={
+      <section className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-16">
+        <div className="container max-w-md text-center text-[hsl(var(--muted-foreground))]">Loading...</div>
+      </section>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const searchParams = useSearchParams();
   const roleParam = searchParams?.get("role");
   const [loginMode, setLoginMode] = useState<"student" | "admin">(
@@ -41,11 +52,7 @@ export default function LoginPage() {
         logger.warn("Login failed", { email: form.email });
       } else {
         logger.info("Login successful", { email: form.email, role: loginMode });
-        if (loginMode === "admin") {
-          router.push("/dashboard");
-        } else {
-          router.push("/portal");
-        }
+        window.location.href = loginMode === "admin" ? "/dashboard" : "/portal";
       }
     } catch (err) {
       setError("حدث خطأ في تسجيل الدخول");
