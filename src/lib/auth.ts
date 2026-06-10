@@ -4,7 +4,10 @@ import GoogleProvider from "next-auth/providers/google";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { logger } from "@/lib/logger";
-import { ALL_PERMISSIONS } from "@/lib/permissions";
+import type { UserRole, RolePermission } from "@/types/roles";
+import { ROLE_PERMISSIONS } from "@/types/roles";
+
+const ALL_ROLE_PERMISSIONS = ROLE_PERMISSIONS;
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,20 +19,70 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        try {
-          const q = query(collection(db, "admins"), where("email", "==", credentials.email), where("password", "==", credentials.password), limit(1));
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            const data = snap.docs[0].data() as { name: string; email: string; permissions?: string[] };
-            logger.info("Admin login via Firestore", { email: credentials.email });
-            return { id: snap.docs[0].id, name: data.name, email: data.email, role: "admin", permissions: data.permissions || [] };
+
+        if (db) {
+          try {
+            const adminsQuery = query(collection(db, "admins"), where("email", "==", credentials.email), limit(1));
+            const adminsSnap = await getDocs(adminsQuery);
+            if (!adminsSnap.empty) {
+              const data = adminsSnap.docs[0].data() as { name: string; email: string; password?: string; role?: UserRole; permissions?: RolePermission[] };
+              const passwordValid = data.password ? credentials.password === data.password : false;
+              if (passwordValid) {
+                logger.info("Admin login via Firestore", { email: credentials.email });
+                return {
+                  id: adminsSnap.docs[0].id,
+                  name: data.name,
+                  email: data.email,
+                  role: data.role || "admin",
+                  permissions: data.permissions || ALL_ROLE_PERMISSIONS.admin,
+                };
+              }
+            }
+
+            const teachersQuery = query(collection(db, "teachers"), where("email", "==", credentials.email), limit(1));
+            const teachersSnap = await getDocs(teachersQuery);
+            if (!teachersSnap.empty) {
+              const data = teachersSnap.docs[0].data() as { name: string; email: string; password?: string };
+              const passwordValid = data.password ? credentials.password === data.password : false;
+              if (passwordValid) {
+                logger.info("Teacher login via Firestore", { email: credentials.email });
+                return {
+                  id: teachersSnap.docs[0].id,
+                  name: data.name,
+                  email: data.email,
+                  role: "teacher" as UserRole,
+                  permissions: ALL_ROLE_PERMISSIONS.teacher,
+                };
+              }
+            }
+
+            const studentsQuery = query(collection(db, "students"), where("email", "==", credentials.email), limit(1));
+            const studentsSnap = await getDocs(studentsQuery);
+            if (!studentsSnap.empty) {
+              const data = studentsSnap.docs[0].data() as { name: string; email: string; password?: string };
+              const passwordValid = data.password ? credentials.password === data.password : false;
+              if (passwordValid) {
+                logger.info("Student login via Firestore", { email: credentials.email });
+                return {
+                  id: studentsSnap.docs[0].id,
+                  name: data.name,
+                  email: data.email,
+                  role: "student" as UserRole,
+                  permissions: ALL_ROLE_PERMISSIONS.student,
+                };
+              }
+            }
+          } catch (err) {
+            logger.error("Firestore lookup failed", err);
           }
-        } catch (err) {
-          logger.error("Firestore admin lookup failed", err);
         }
-        if (credentials.email === "admin@noor.com" && credentials.password === "admin123") {
-          return { id: "1", name: "مشرف النظام", email: "admin@noor.com", role: "admin", permissions: ALL_PERMISSIONS };
+
+        const hardcodedEmail = process.env.ADMIN_EMAIL || "admin@noor.com";
+        const hardcodedPass = process.env.ADMIN_PASSWORD || "admin123";
+        if (credentials.email === hardcodedEmail && credentials.password === hardcodedPass) {
+          return { id: "1", name: "مشرف النظام", email: hardcodedEmail, role: "admin", permissions: ALL_ROLE_PERMISSIONS.admin };
         }
+
         return null;
       },
     }),
@@ -41,32 +94,43 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user }) {
       if (account?.provider === "google") {
-        try {
-          const q = query(collection(db, "admins"), where("email", "==", token.email), limit(1));
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            const data = snap.docs[0].data() as { permissions?: string[] };
-            token.role = "admin";
-            token.permissions = data.permissions || [];
-          } else {
+        if (db) {
+          try {
+            const adminsQuery = query(collection(db, "admins"), where("email", "==", token.email), limit(1));
+            const adminsSnap = await getDocs(adminsQuery);
+            if (!adminsSnap.empty) {
+              token.role = "admin";
+              token.permissions = ALL_ROLE_PERMISSIONS.admin;
+            } else {
+              const teachersQuery = query(collection(db, "teachers"), where("email", "==", token.email), limit(1));
+              const teachersSnap = await getDocs(teachersQuery);
+              if (!teachersSnap.empty) {
+                token.role = "teacher";
+                token.permissions = ALL_ROLE_PERMISSIONS.teacher;
+              } else {
+                token.role = "student";
+                token.permissions = ALL_ROLE_PERMISSIONS.student;
+              }
+            }
+          } catch (err) {
+            logger.error("Firestore role lookup for Google login failed", err);
             token.role = "student";
-            token.permissions = [];
+            token.permissions = ALL_ROLE_PERMISSIONS.student;
           }
-        } catch (err) {
-          logger.error("Firestore admin check for Google login failed", err);
+        } else {
           token.role = "student";
-          token.permissions = [];
+          token.permissions = ALL_ROLE_PERMISSIONS.student;
         }
       } else if (user) {
-        token.role = (user as { role?: string }).role || "student";
-        token.permissions = (user as { permissions?: string[] }).permissions || [];
+        token.role = (user as { role?: UserRole }).role || "student";
+        token.permissions = (user as { permissions?: RolePermission[] }).permissions || ALL_ROLE_PERMISSIONS.student;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { role?: string }).role = token.role as string;
-        (session.user as { permissions?: string[] }).permissions = token.permissions as string[];
+        (session.user as { role?: UserRole }).role = token.role as UserRole;
+        (session.user as { permissions?: RolePermission[] }).permissions = token.permissions as RolePermission[];
       }
       return session;
     },

@@ -8,6 +8,20 @@ export const SITE = {
   address: "كمبالا ، هام تاور - جوار جامعة ماكرري ",
 };
 
+export const PLACEHOLDER_IMAGES = {
+  english: "/placeholders/english.svg",
+  french: "/placeholders/french.svg",
+  german: "/placeholders/german.svg",
+  spanish: "/placeholders/spanish.svg",
+  arabic: "/placeholders/arabic.svg",
+  ielts: "/placeholders/ielts.svg",
+  programming: "/placeholders/programming.svg",
+  design: "/placeholders/design.svg",
+  networking: "/placeholders/networking.svg",
+  cybersecurity: "/placeholders/cybersecurity.svg",
+  office: "/placeholders/office.svg",
+};
+
 export const BRAND_ASSETS = {
   symbol: "/images/just-logo.png",
   full: "/images/noorpro.png",

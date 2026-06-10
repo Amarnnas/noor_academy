@@ -7,14 +7,14 @@ import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BookOpen, Users, Star, ShoppingCart, MessageSquare, Award, Shield, Menu, X, LogOut, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hasPermission } from "@/lib/permissions";
-import type { AdminPermission } from "@/types/admin";
+import { hasSpecificPermission } from "@/lib/permissions";
+import type { RolePermission } from "@/types/roles";
 
 interface SidebarLink {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   href: string;
-  permission?: AdminPermission;
+  permission?: RolePermission;
 }
 
 const sidebarLinks: SidebarLink[] = [
@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
-  const userPermissions = ((session?.user as any)?.permissions || []) as string[];
+  const userPermissions = ((session?.user as { permissions?: string[] })?.permissions || []) as string[];
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex">
@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}>
         <div className="flex flex-col h-full">
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {sidebarLinks.filter((link) => !link.permission || hasPermission(userPermissions, link.permission)).map((link) => {
+            {sidebarLinks.filter((link) => !link.permission || hasSpecificPermission(userPermissions, link.permission)).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link

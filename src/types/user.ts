@@ -1,10 +1,12 @@
+import type { UserRole, RolePermission } from "./roles";
+
 export interface User {
   id: string;
   name: string;
   email: string;
   password: string;
-  role: "admin" | "student";
-  permissions?: string[];
+  role: UserRole;
+  permissions?: RolePermission[];
   avatar?: string;
   createdAt: string;
 }

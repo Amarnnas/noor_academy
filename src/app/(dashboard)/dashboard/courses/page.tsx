@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BRAND_ASSETS } from "@/lib/constants";
 import { COURSE_CURRENCY, formatCoursePrice } from "@/lib/currency";
+
+const NEW_COURSE_IMAGE = "/images/placeholders/languages.svg";
 import { logger } from "@/lib/logger";
 import { type Course } from "@/types/course";
 
@@ -39,7 +40,7 @@ export default function DashboardCoursesPage() {
       setCourses(courses.map((c) => c.id === editingId ? { ...c, title: form.title, description: form.description, category: form.category, level: form.level as Course["level"], duration: form.duration, price: Number(form.price) } : c));
       logger.info("Course updated", { id: editingId, title: form.title });
     } else {
-      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: BRAND_ASSETS.symbol, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
+      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: NEW_COURSE_IMAGE, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
       setCourses([...courses, newCourse]);
       logger.info("Course added", { title: form.title });
     }

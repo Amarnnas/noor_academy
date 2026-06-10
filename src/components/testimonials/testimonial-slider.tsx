@@ -11,9 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useSession } from "next-auth/react";
-import { BRAND_ASSETS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
 import { type Testimonial } from "@/types/testimonial";
+
+const TESTIMONIAL_AVATAR_PLACEHOLDER = "/images/placeholders/testimonial.svg";
 
 export function TestimonialSlider() {
   const [current, setCurrent] = useState(0);
@@ -33,7 +34,7 @@ export function TestimonialSlider() {
     const newReview: Testimonial = {
       id: `review-${Date.now()}`,
       name: session?.user?.name || "طالب",
-      avatar: BRAND_ASSETS.symbol,
+      avatar: TESTIMONIAL_AVATAR_PLACEHOLDER,
       role: "طالب",
       content: reviewForm.content,
       rating: reviewForm.rating,

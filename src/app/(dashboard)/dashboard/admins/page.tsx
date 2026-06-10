@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Plus, X, Shield } from "lucide-react";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { logger } from "@/lib/logger";
-import { PERMISSION_LABELS, ALL_PERMISSIONS, hasPermission } from "@/lib/permissions";
-import type { Admin, AdminPermission } from "@/types/admin";
+import { PERMISSION_LABELS, ALL_PERMISSIONS, hasSpecificPermission } from "@/lib/permissions";
+import type { RolePermission } from "@/types/roles";
+import type { Admin } from "@/types/admin";
 
 export default function DashboardAdminsPage() {
   const { data: session, status } = useSession();
@@ -21,14 +22,14 @@ export default function DashboardAdminsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<RolePermission[]>([]);
   const [formError, setFormError] = useState("");
 
   const userPermissions = ((session?.user as any)?.permissions || []) as string[];
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!hasPermission(userPermissions, "manage_admins")) {
+    if (!hasSpecificPermission(userPermissions, "manage_admins")) {
       router.push("/dashboard");
       return;
     }
@@ -107,7 +108,7 @@ export default function DashboardAdminsPage() {
     }
   };
 
-  const togglePermission = (perm: AdminPermission) => {
+  const togglePermission = (perm: RolePermission) => {
     setSelectedPermissions((prev) =>
       prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
     );
