@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Pencil, Trash2, Plus, X, Upload, ImageIcon } from "lucide-react";
 import { courses as initialCourses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +20,10 @@ interface CourseForm {
   level: string;
   duration: string;
   price: string;
+  image: string;
 }
 
-const emptyForm: CourseForm = { title: "", description: "", category: "", level: "", duration: "", price: "" };
+const emptyForm: CourseForm = { title: "", description: "", category: "", level: "", duration: "", price: "", image: "" };
 
 export default function DashboardCoursesPage() {
   const [courses, setCourses] = useState<Course[]>(initialCourses);
@@ -30,17 +31,41 @@ export default function DashboardCoursesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CourseForm>(emptyForm);
   const [formError, setFormError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openAdd = () => { setEditingId(null); setForm(emptyForm); setFormError(""); setShowModal(true); };
-  const openEdit = (c: Course) => { setEditingId(c.id); setForm({ title: c.title, description: c.description, category: c.category, level: c.level, duration: c.duration, price: String(c.price) }); setFormError(""); setShowModal(true); };
+  const openEdit = (c: Course) => { setEditingId(c.id); setForm({ title: c.title, description: c.description, category: c.category, level: c.level, duration: c.duration, price: String(c.price), image: c.image || "" }); setFormError(""); setShowModal(true); };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    setFormError("");
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        setForm({ ...form, image: data.url });
+      } else {
+        setFormError(data.error || "فشل رفع الصورة");
+      }
+    } catch {
+      setFormError("فشل رفع الصورة");
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const handleSave = () => {
     if (!form.title || !form.category || !form.duration || !form.price) { setFormError("يرجى ملء جميع الحقول المطلوبة"); return; }
     if (editingId) {
-      setCourses(courses.map((c) => c.id === editingId ? { ...c, title: form.title, description: form.description, category: form.category, level: form.level as Course["level"], duration: form.duration, price: Number(form.price) } : c));
+      setCourses(courses.map((c) => c.id === editingId ? { ...c, title: form.title, description: form.description, category: form.category, level: form.level as Course["level"], duration: form.duration, price: Number(form.price), image: form.image || c.image } : c));
       logger.info("Course updated", { id: editingId, title: form.title });
     } else {
-      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: NEW_COURSE_IMAGE, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
+      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: form.image || NEW_COURSE_IMAGE, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
       setCourses([...courses, newCourse]);
       logger.info("Course added", { title: form.title });
     }
@@ -133,6 +158,20 @@ export default function DashboardCoursesPage() {
                 <div className="space-y-2">
                   <Label>السعر ({COURSE_CURRENCY.label})</Label>
                   <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="السعر" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>صورة الدورة</Label>
+                <div className="flex items-center gap-3">
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageUpload} ref={fileInputRef} hidden />
+                  <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}>
+                    <Upload className="h-4 w-4" />{imageUploading ? "جاري الرفع..." : "اختيار صورة"}
+                  </Button>
+                  {form.image && (
+                    <div className="relative w-16 h-12 rounded-lg overflow-hidden border flex-shrink-0">
+                      <img src={form.image} alt="معاينة" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
               </div>
               {formError && <p className="text-sm text-red-500">{formError}</p>}

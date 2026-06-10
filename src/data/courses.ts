@@ -1,5 +1,4 @@
 import { Course } from "@/types/course";
-import { PLACEHOLDER_IMAGES } from "@/lib/constants";
 
 export const courses: Course[] = [
   {
@@ -8,7 +7,7 @@ export const courses: Course[] = [
     title: "الإنجليزية للمبتدئين",
     description: "دورة شاملة لتعلم اللغة الإنجليزية من الصفر حتى الاحتراف، مع تركيز على المحادثة والقواعد.",
     fullDescription: "دورة متكاملة مصممة خصيصاً للمبتدئين الراغبين في تعلم اللغة الإنجليزية من الأساس. نغطي جميع المهارات الأساسية: القراءة، الكتابة، الاستماع، والمحادثة. تم تطوير المنهج من قبل خبراء لغويين معتمدين لضمان أفضل نتائج تعليمية.",
-    image: PLACEHOLDER_IMAGES.english,
+    image: "/images/courses/english.jpg",
     category: "الإنجليزية",
     level: "مبتدئ إلى متقدم",
     duration: "40 ساعة",
@@ -38,7 +37,7 @@ export const courses: Course[] = [
     title: "الفرنسية للمستوى المتوسط",
     description: "طور مهاراتك في اللغة الفرنسية مع منهج تفاعلي يركز على الطلاقة والثقة في التحدث.",
     fullDescription: "هذه الدورة مثالية لمن لديه أساسيات اللغة الفرنسية ويريد الارتقاء بمستواه. نركز على تحسين الطلاقة والنطق الصحيح وبناء الثقة في المحادثات المعقدة.",
-    image: PLACEHOLDER_IMAGES.french,
+    image: "/images/courses/french.jpg",
     category: "الفرنسية",
     level: "متوسط",
     duration: "35 ساعة",
@@ -65,7 +64,7 @@ export const courses: Course[] = [
     title: "الألمانية من الصفر (A1-A2)",
     description: "انطلق في رحلة تعلم اللغة الألمانية بأسلوب مبسط ومنهج أوروبي معتمد.",
     fullDescription: "دورة معتمدة وفق الإطار الأوروبي المرجعي للغات (CEFR) للمستويين A1 وA2. صممت لتنقل المتعلم من معرفة صفرية إلى القدرة على التواصل في المواقف اليومية.",
-    image: PLACEHOLDER_IMAGES.german,
+    image: "/images/courses/german.jpg",
     category: "الألمانية",
     level: "مبتدئ",
     duration: "50 ساعة",
@@ -94,7 +93,7 @@ export const courses: Course[] = [
     title: " IELTS التحضير لاختبار",
     description: "دورة مكثفة للتحضير لاختبار IELTS مع استراتيجيات وحلول عملية لتحقيق الدرجة المطلوبة.",
     fullDescription: "برنامج تدريبي مكثف مصمم لمساعدة الطلاب على تحقيق الدرجة المطلوبة في اختبار IELTS. يشمل البرنامج تدريبات على جميع أقسام الاختبار مع نماذج محاكاة واختبارات تجريبية.",
-    image: PLACEHOLDER_IMAGES.ielts,
+    image: "/images/courses/ielts.jpg",
     category: "الإنجليزية",
     level: "متقدم",
     duration: "30 ساعة",
@@ -123,7 +122,7 @@ export const courses: Course[] = [
     title: "الإسبانية للمبتدئين",
     description: "تعلم الإسبانية بطريقة ممتعة وتفاعلية مع مدربين ناطقين أصليين.",
     fullDescription: "انغمس في عالم اللغة الإسبانية مع دورة مصممة للمبتدئين تجمع بين المتعة والتعلم الفعال. نستخدم أحدث أساليب التعلم التفاعلي.",
-    image: PLACEHOLDER_IMAGES.spanish,
+    image: "/images/courses/spanish.jpg",
     category: "الإسبانية",
     level: "مبتدئ",
     duration: "45 ساعة",
@@ -150,7 +149,7 @@ export const courses: Course[] = [
     title: "العربية للناطقين بغيرها",
     description: "دورة متخصصة لتعليم اللغة العربية لغير الناطقين بها بأسلوب عصري وسهل.",
     fullDescription: "برنامج شامل لتعليم اللغة العربية لغير الناطقين بها، يركز على المهارات الأربع مع عناية خاصة بالنطق والخط العربي.",
-    image: PLACEHOLDER_IMAGES.arabic,
+    image: "/images/courses/arabic.jpg",
     category: "العربية",
     level: "مبتدئ إلى متقدم",
     duration: "60 ساعة",
