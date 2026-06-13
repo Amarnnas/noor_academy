@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { logger } from "@/lib/logger";
@@ -9,6 +11,10 @@ const UPLOAD_DIR = "public/images/courses";
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !["admin", "teacher"].includes((session.user as { role?: string })?.role || "")) {
+      return NextResponse.json({ error: "غير مصرح لك برفع الملفات" }, { status: 403 });
+    }
     const formData = await request.formData();
     const file = formData.get("image") as File | null;
 

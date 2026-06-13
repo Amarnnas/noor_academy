@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { getUserByEmail } from "@/lib/user-store";
 import { logger } from "@/lib/logger";
 import type { UserRole, RolePermission } from "@/types/roles";
@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        if (db) {
+        if (isFirebaseConfigured()) {
           try {
             const adminsQuery = query(collection(db, "admins"), where("email", "==", credentials.email), limit(1));
             const adminsSnap = await getDocs(adminsQuery);
@@ -84,17 +84,6 @@ export const authOptions: NextAuthOptions = {
           return { id: registeredUser.email, name: registeredUser.name, email: registeredUser.email, role: "student", permissions: ALL_ROLE_PERMISSIONS.student };
         }
 
-        const hardcodedAdmins: Array<{ email: string; password: string; name: string }> = [
-          { email: process.env.ADMIN_EMAIL || "admin@noor.com", password: process.env.ADMIN_PASSWORD || "admin123", name: "مشرف النظام" },
-          { email: "mhmdalfayz818@gmail.com", password: "admin123", name: "Mhmd Alfayz" },
-          { email: "am2004arnasir@gmail.com", password: "admin123", name: "Am Arnasir" },
-        ];
-        const adminMatch = hardcodedAdmins.find(a => credentials.email === a.email && credentials.password === a.password);
-        if (adminMatch) {
-          logger.info("Admin login (hardcoded)", { email: credentials.email });
-          return { id: adminMatch.email, name: adminMatch.name, email: adminMatch.email, role: "admin", permissions: ALL_ROLE_PERMISSIONS.admin };
-        }
-
         return null;
       },
     }),
@@ -106,7 +95,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user }) {
       if (account?.provider === "google") {
-        if (db) {
+        if (isFirebaseConfigured()) {
           try {
             const adminsQuery = query(collection(db, "admins"), where("email", "==", token.email), limit(1));
             const adminsSnap = await getDocs(adminsQuery);

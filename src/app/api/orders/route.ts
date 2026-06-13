@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createOrder } from "@/lib/firestore";
 import { logger } from "@/lib/logger";
 
 interface OrderBody {
@@ -18,9 +19,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "الحقول المطلوبة: courseId, studentName, studentEmail" }, { status: 400 });
     }
 
-    const order = { id: Date.now().toString(), ...body, status: "pending", createdAt: new Date().toISOString() };
-    logger.info("Order created", order);
-    return NextResponse.json({ success: true, order });
+    const orderId = await createOrder({
+      courseId,
+      courseTitle: courseTitle || "",
+      studentName,
+      studentEmail,
+      phone: phone || "",
+      status: "pending",
+      paid: false,
+      createdAt: new Date().toISOString(),
+    });
+    logger.info("Order created", { orderId, studentName, courseTitle });
+    return NextResponse.json({ success: true, orderId });
   } catch (err) {
     logger.error("POST /api/orders failed", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
