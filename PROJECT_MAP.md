@@ -159,6 +159,8 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
 | Dashboard profile page | DONE | /dashboard/profile with name edit, profile picture upload |
 | Student portal profile page | DONE | /portal/profile with name edit, profile picture upload |
 | Image upload API | DONE | /api/upload accepts images up to 5MB, returns URL |
+| User registration flow | FIXED | Added `/api/auth/register` + user-store.ts to persist registered users in memory; credentials provider checks store |
+| Google sign-in error handling | FIXED | Uses `redirect: false`, catches errors, shows message; OAuth error query param detected on page load |
 | SVG instructor/testimonial placeholders | REPLACED | Replaced with real photos from PIC/ and local images |
 | Logo placeholder component | DONE | src/components/shared/logo-placeholder.tsx with symbol/full variants |
 | CourseThumbnail component | DONE | src/components/shared/course-thumbnail.tsx with category icons |

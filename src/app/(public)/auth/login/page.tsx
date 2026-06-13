@@ -35,10 +35,6 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  useEffect(() => {
-    if (roleParam === "admin") setLoginMode("admin");
-  }, [roleParam]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) { setError("يرجى ملء جميع الحقول"); return; }
@@ -62,17 +58,31 @@ function LoginForm() {
     }
   };
 
+  useEffect(() => {
+    if (roleParam === "admin") setLoginMode("admin");
+    const oauthError = searchParams?.get("error");
+    if (oauthError) {
+      setError("فشل تسجيل الدخول بقوقل، يرجى المحاولة مرة أخرى");
+      logger.info("OAuth error from callback", { error: oauthError });
+    }
+  }, [roleParam, searchParams]);
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError("");
     try {
-      await signIn("google", { callbackUrl: loginMode === "admin" ? "/dashboard" : "/portal" });
+      const result = await signIn("google", { callbackUrl: loginMode === "admin" ? "/dashboard" : "/portal", redirect: false });
+      if (result?.error) {
+        setError("تسجيل الدخول بقوقل غير متاح حالياً");
+      } else if (result?.url) {
+        window.location.href = result.url;
+        return;
+      }
     } catch (err) {
       setError("تسجيل الدخول بقوقل غير متاح حالياً");
       logger.error("Google login error", err);
-    } finally {
-      setGoogleLoading(false);
     }
+    setGoogleLoading(false);
   };
 
   return (

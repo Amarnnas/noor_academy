@@ -51,12 +51,15 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/otp-verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.email, code: otp, type: "register" }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "كود غير صحيح"); setLoading(false); return; }
+      const regRes = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.email, name: form.name, password: form.password }) });
+      const regData = await regRes.json();
+      if (!regRes.ok) { setError(regData.error || "حدث خطأ في إنشاء الحساب"); setLoading(false); return; }
       logger.info("Registration", { email: form.email, name: form.name });
       const result = await signIn("credentials", { email: form.email, password: form.password, redirect: false });
       if (result?.error) {
-        setError("حدث خطأ في إنشاء الحساب");
+        setError("حدث خطأ في تسجيل الدخول بعد إنشاء الحساب");
       } else {
-        router.push("/dashboard");
+        router.push("/portal");
       }
     } catch (err) {
       setError("حدث خطأ في التحقق");

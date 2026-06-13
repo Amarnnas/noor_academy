@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getUserByEmail } from "@/lib/user-store";
 import { logger } from "@/lib/logger";
 import type { UserRole, RolePermission } from "@/types/roles";
 import { ROLE_PERMISSIONS } from "@/types/roles";
@@ -75,6 +76,12 @@ export const authOptions: NextAuthOptions = {
           } catch (err) {
             logger.error("Firestore lookup failed", err);
           }
+        }
+
+        const registeredUser = getUserByEmail(credentials.email);
+        if (registeredUser && credentials.password === registeredUser.password) {
+          logger.info("Student login (registered)", { email: credentials.email });
+          return { id: registeredUser.email, name: registeredUser.name, email: registeredUser.email, role: "student", permissions: ALL_ROLE_PERMISSIONS.student };
         }
 
         const hardcodedAdmins: Array<{ email: string; password: string; name: string }> = [
