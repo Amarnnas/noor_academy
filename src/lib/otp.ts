@@ -36,7 +36,7 @@ async function sendEmail(to: string, subject: string, html: string) {
 
 export async function sendOtp(email: string, type: OtpType) {
   const code = generateCode();
-  setOtp(email, code, type);
+  await setOtp(email, code, type);
   const subject = type === "register" ? "كود تأكيد التسجيل - أكاديمية نور" : "إعادة تعيين كلمة المرور - أكاديمية نور";
   const html = `<div style="font-family: sans-serif; max-width:480px; margin:0 auto; padding:24px; border:1px solid #e2e8f0; border-radius:12px; text-align:center; direction:rtl;"><h2 style="color:#0d9488;">أكاديمية نور</h2><p>كود التحقق الخاص بك هو:</p><div style="font-size:32px; letter-spacing:8px; font-weight:bold; color:#0d9488; padding:16px; background:#f0fdfa; border-radius:8px; margin:16px 0;">${code}</div><p style="color:#64748b; font-size:14px;">هذا الكود صالح لمدة 10 دقائق</p></div>`;
   await sendEmail(email, subject, html);

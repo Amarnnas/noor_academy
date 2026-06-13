@@ -1,10 +1,10 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
-import { getUserByEmail } from "@/lib/user-store";
 import { logger } from "@/lib/logger";
+import { adminAuthIsConfigured } from "@/lib/firebase-admin";
+import { getAdminByEmail, getTeacherByEmail, getStudentByEmail } from "@/lib/firestore-admin";
+import { verifyPassword } from "@/lib/password";
 import type { UserRole, RolePermission } from "@/types/roles";
 import { ROLE_PERMISSIONS } from "@/types/roles";
 
@@ -21,67 +21,55 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        if (isFirebaseConfigured()) {
+        if (adminAuthIsConfigured()) {
           try {
-            const adminsQuery = query(collection(db, "admins"), where("email", "==", credentials.email), limit(1));
-            const adminsSnap = await getDocs(adminsQuery);
-            if (!adminsSnap.empty) {
-              const data = adminsSnap.docs[0].data() as { name: string; email: string; password?: string; role?: UserRole; permissions?: RolePermission[] };
-              const passwordValid = data.password ? credentials.password === data.password : false;
-              if (passwordValid) {
-                logger.info("Admin login via Firestore", { email: credentials.email });
+            const adminData = await getAdminByEmail(credentials.email);
+            if (adminData?.password) {
+              const valid = await verifyPassword(credentials.password, adminData.password);
+              if (valid) {
+                logger.info("Admin login via Admin SDK", { email: credentials.email });
                 return {
-                  id: adminsSnap.docs[0].id,
-                  name: data.name,
-                  email: data.email,
-                  role: data.role || "admin",
-                  permissions: data.permissions || ALL_ROLE_PERMISSIONS.admin,
+                  id: adminData.id,
+                  name: adminData.name,
+                  email: adminData.email,
+                  role: adminData.role || "admin",
+                  permissions: adminData.permissions || ALL_ROLE_PERMISSIONS.admin,
                 };
               }
             }
 
-            const teachersQuery = query(collection(db, "teachers"), where("email", "==", credentials.email), limit(1));
-            const teachersSnap = await getDocs(teachersQuery);
-            if (!teachersSnap.empty) {
-              const data = teachersSnap.docs[0].data() as { name: string; email: string; password?: string };
-              const passwordValid = data.password ? credentials.password === data.password : false;
-              if (passwordValid) {
-                logger.info("Teacher login via Firestore", { email: credentials.email });
+            const teacherData = await getTeacherByEmail(credentials.email);
+            if (teacherData?.password) {
+              const valid = await verifyPassword(credentials.password, teacherData.password);
+              if (valid) {
+                logger.info("Teacher login via Admin SDK", { email: credentials.email });
                 return {
-                  id: teachersSnap.docs[0].id,
-                  name: data.name,
-                  email: data.email,
+                  id: teacherData.id,
+                  name: teacherData.name,
+                  email: teacherData.email,
                   role: "teacher" as UserRole,
                   permissions: ALL_ROLE_PERMISSIONS.teacher,
                 };
               }
             }
 
-            const studentsQuery = query(collection(db, "students"), where("email", "==", credentials.email), limit(1));
-            const studentsSnap = await getDocs(studentsQuery);
-            if (!studentsSnap.empty) {
-              const data = studentsSnap.docs[0].data() as { name: string; email: string; password?: string };
-              const passwordValid = data.password ? credentials.password === data.password : false;
-              if (passwordValid) {
-                logger.info("Student login via Firestore", { email: credentials.email });
+            const studentData = await getStudentByEmail(credentials.email);
+            if (studentData?.password) {
+              const valid = await verifyPassword(credentials.password, studentData.password);
+              if (valid) {
+                logger.info("Student login via Admin SDK", { email: credentials.email });
                 return {
-                  id: studentsSnap.docs[0].id,
-                  name: data.name,
-                  email: data.email,
+                  id: studentData.id,
+                  name: studentData.name,
+                  email: studentData.email,
                   role: "student" as UserRole,
                   permissions: ALL_ROLE_PERMISSIONS.student,
                 };
               }
             }
           } catch (err) {
-            logger.error("Firestore lookup failed", err);
+            logger.error("Admin SDK lookup failed", err);
           }
-        }
-
-        const registeredUser = getUserByEmail(credentials.email);
-        if (registeredUser && credentials.password === registeredUser.password) {
-          logger.info("Student login (registered)", { email: credentials.email });
-          return { id: registeredUser.email, name: registeredUser.name, email: registeredUser.email, role: "student", permissions: ALL_ROLE_PERMISSIONS.student };
         }
 
         return null;
@@ -95,17 +83,15 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user }) {
       if (account?.provider === "google") {
-        if (isFirebaseConfigured()) {
+        if (adminAuthIsConfigured()) {
           try {
-            const adminsQuery = query(collection(db, "admins"), where("email", "==", token.email), limit(1));
-            const adminsSnap = await getDocs(adminsQuery);
-            if (!adminsSnap.empty) {
+            const adminData = await getAdminByEmail(token.email || "");
+            if (adminData) {
               token.role = "admin";
               token.permissions = ALL_ROLE_PERMISSIONS.admin;
             } else {
-              const teachersQuery = query(collection(db, "teachers"), where("email", "==", token.email), limit(1));
-              const teachersSnap = await getDocs(teachersQuery);
-              if (!teachersSnap.empty) {
+              const teacherData = await getTeacherByEmail(token.email || "");
+              if (teacherData) {
                 token.role = "teacher";
                 token.permissions = ALL_ROLE_PERMISSIONS.teacher;
               } else {
@@ -114,7 +100,7 @@ export const authOptions: NextAuthOptions = {
               }
             }
           } catch (err) {
-            logger.error("Firestore role lookup for Google login failed", err);
+            logger.error("Admin SDK role lookup for Google login failed", err);
             token.role = "student";
             token.permissions = ALL_ROLE_PERMISSIONS.student;
           }

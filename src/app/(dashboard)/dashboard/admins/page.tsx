@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Plus, X, Shield } from "lucide-react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,9 +36,10 @@ export default function DashboardAdminsPage() {
 
   const loadAdmins = async () => {
     try {
-      const snap = await getDocs(collection(db, "admins"));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Admin));
-      setAdmins(list);
+      const res = await fetch("/api/admin/admins");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setAdmins(data.admins || []);
     } catch (err) {
       logger.error("Failed to load admins", err);
     } finally {
@@ -71,19 +70,15 @@ export default function DashboardAdminsPage() {
 
     try {
       if (editingId) {
-        const updateData: Record<string, unknown> = { permissions: selectedPermissions };
-        if (form.name) updateData.name = form.name;
-        if (form.password) updateData.password = form.password;
-        await updateDoc(doc(db, "admins", editingId), updateData);
+        const body: Record<string, unknown> = { permissions: selectedPermissions };
+        if (form.name) body.name = form.name;
+        if (form.password) body.password = form.password;
+        const res = await fetch(`/api/admin/admins/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (!res.ok) { const e = await res.json(); setFormError(e.error || "حدث خطأ"); return; }
         logger.info("Admin updated", { id: editingId });
       } else {
-        await addDoc(collection(db, "admins"), {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          permissions: selectedPermissions,
-          createdAt: new Date().toISOString(),
-        });
+        const res = await fetch("/api/admin/admins", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.name, email: form.email, password: form.password, permissions: selectedPermissions }) });
+        if (!res.ok) { const e = await res.json(); setFormError(e.error || "حدث خطأ"); return; }
         logger.info("Admin created", { email: form.email });
       }
       setShowModal(false);
@@ -96,12 +91,9 @@ export default function DashboardAdminsPage() {
 
   const handleDelete = async (id: string, email: string) => {
     if (email === session?.user?.email) { setFormError("لا يمكنك حذف نفسك"); return; }
-    const remaining = admins.filter((a) => a.id !== id);
-    const hasSupervisor = remaining.some((a) => a.permissions.includes("manage_admins"));
-    if (!hasSupervisor) { setFormError("لا يمكن حذف آخر مشرف"); return; }
     try {
-      await deleteDoc(doc(db, "admins", id));
-      logger.info("Admin deleted", { id, email });
+      const res = await fetch(`/api/admin/admins/${id}`, { method: "DELETE" });
+      if (!res.ok) { const e = await res.json(); setFormError(e.error || "حدث خطأ"); return; }
       loadAdmins();
     } catch (err) {
       logger.error("Failed to delete admin", err);

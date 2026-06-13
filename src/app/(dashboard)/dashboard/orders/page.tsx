@@ -1,70 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Pencil, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { courses } from "@/data/courses";
-import { initialOrders } from "@/data/orders";
 import { type Order } from "@/types/user";
 import { logger } from "@/lib/logger";
 
 const statusBadge: Record<string, "default" | "emerald" | "destructive"> = { pending: "default", confirmed: "emerald", cancelled: "destructive" };
 const statusLabel = { pending: "قيد الانتظار", confirmed: "مؤكد", cancelled: "ملغي" };
 
-interface StudentForm {
-  studentName: string;
-  studentEmail: string;
-  phone: string;
-  courseId: string;
-  status: "pending" | "confirmed" | "cancelled";
-  paid: boolean;
-}
-
-const emptyForm: StudentForm = { studentName: "", studentEmail: "", phone: "", courseId: "", status: "pending", paid: false };
-
 export default function DashboardOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<StudentForm>(emptyForm);
+  const [form, setForm] = useState({ studentName: "", studentEmail: "", phone: "", status: "pending" as const, paid: false });
   const [formError, setFormError] = useState("");
 
-  const openAdd = () => { setEditingId(null); setForm(emptyForm); setFormError(""); setShowModal(true); };
-  const openEdit = (o: Order) => { setEditingId(o.id); setForm({ studentName: o.studentName, studentEmail: o.studentEmail, phone: o.phone, courseId: o.courseId, status: o.status, paid: o.paid }); setFormError(""); setShowModal(true); };
+  useEffect(() => { loadOrders(); }, []);
 
-  const handleSave = () => {
-    if (!form.studentName || !form.studentEmail || !form.phone || !form.courseId) { setFormError("يرجى ملء جميع الحقول"); return; }
-    const course = courses.find((c) => c.id === form.courseId);
-    if (editingId) {
-      setOrders(orders.map((o) => o.id === editingId ? { ...o, studentName: form.studentName, studentEmail: form.studentEmail, phone: form.phone, courseId: form.courseId, courseTitle: course?.title || o.courseTitle, status: form.status, paid: form.paid } : o));
-      logger.info("Order updated", { id: editingId, status: form.status, paid: form.paid });
-    } else {
-      const newOrder: Order = {
-        id: `STU-${Date.now()}`,
-        courseId: form.courseId,
-        courseTitle: course?.title || "",
-        studentName: form.studentName,
-        studentEmail: form.studentEmail,
-        phone: form.phone,
-        status: form.status,
-        paid: form.paid,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      setOrders([newOrder, ...orders]);
-      logger.info("Student registered", { id: newOrder.id, name: form.studentName, course: newOrder.courseTitle, status: newOrder.status, paid: newOrder.paid });
+  const loadOrders = async () => {
+    try {
+      const res = await fetch("/api/admin/orders");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setOrders(data.orders || []);
+    } catch (err) {
+      logger.error("Failed to load orders", err);
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
+  };
+
+  const openEdit = (o: Order) => { setEditingId(o.id); setForm({ studentName: o.studentName, studentEmail: o.studentEmail, phone: o.phone, status: o.status, paid: o.paid }); setFormError(""); setShowModal(true); };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    if (!form.studentName || !form.studentEmail) { setFormError("يرجى ملء الحقول"); return; }
+    try {
+      const res = await fetch(`/api/admin/orders/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: form.status, paid: form.paid }) });
+      if (!res.ok) { const e = await res.json(); setFormError(e.error || "حدث خطأ"); return; }
+      logger.info("Order updated", { id: editingId, status: form.status, paid: form.paid });
+      setShowModal(false);
+      loadOrders();
+    } catch (err) {
+      logger.error("Failed to update order", err);
+      setFormError("حدث خطأ");
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">طلبات التسجيل</h1>
-        <Button onClick={openAdd} className="gap-2"><Plus className="h-4 w-4" />تسجيل طالب جديد</Button>
       </div>
+      {loading ? <div className="text-center py-12 text-[hsl(var(--muted-foreground))]">جاري التحميل...</div> : (
       <div className="rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -104,7 +97,7 @@ export default function DashboardOrdersPage() {
           </table>
         </div>
       </div>
-
+      )}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowModal(false)}>
           <div className="rounded-2xl border bg-[hsl(var(--card))] p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
