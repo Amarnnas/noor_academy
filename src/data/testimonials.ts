@@ -4,7 +4,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "1",
     name: "نورة الشمري",
-    avatar: "https://randomuser.me/api/portraits/women/1.jpg",
+    avatar: "https://images.pexels.com/photos/15154961/pexels-photo-15154961.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
     role: "طالبة دورة الإنجليزية",
     content: "تجربة رائعة! تعلمت الإنجليزية بطلاقة بفضل الله ثم بفضل المدربين المحترفين. المنهج ممتاز والأسعار معقولة جداً.",
     rating: 5,
@@ -20,7 +20,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "3",
     name: "لمى الغامدي",
-    avatar: "https://randomuser.me/api/portraits/women/3.jpg",
+    avatar: "https://images.pexels.com/photos/8350562/pexels-photo-8350562.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
     role: "طالبة دورة الفرنسية",
     content: "من أفضل المراكز التعليمية التي تعاملت معها. الدعم المستمر والمتابعة الفردية هي ما يميز نور عن غيرها.",
     rating: 5,
@@ -36,7 +36,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "5",
     name: "سارة القحطاني",
-    avatar: "https://randomuser.me/api/portraits/women/5.jpg",
+    avatar: "https://images.pexels.com/photos/9473042/pexels-photo-9473042.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
     role: "طالبة IELTS",
     content: "الحمد لله حصلت على 7.5 في اختبار IELTS بفضل الله ثم بفضل الدورة المكثفة والنصائح القيمة من المدرب د.أحمد.",
     rating: 5,
