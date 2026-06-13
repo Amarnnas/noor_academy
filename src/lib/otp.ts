@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { logger } from "@/lib/logger";
-import { setOtp, consumeOtp } from "@/lib/otp-store";
+import { setOtp, consumeOtp as consumeOtpStore, checkOtp } from "@/lib/otp-store";
 
 export type OtpType = "register" | "reset";
 
@@ -44,6 +44,14 @@ export async function sendOtp(email: string, type: OtpType) {
   return code;
 }
 
+export async function consumeOtp(email: string, code: string, type: OtpType): Promise<boolean> {
+  return consumeOtpStore(email, code, type);
+}
+
 export async function verifyOtp(email: string, code: string, type: OtpType): Promise<boolean> {
   return consumeOtp(email, code, type);
+}
+
+export async function validateOtp(email: string, code: string, type: OtpType): Promise<boolean> {
+  return checkOtp(email, code, type);
 }

@@ -116,8 +116,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { role?: UserRole }).role = token.role as UserRole;
-        (session.user as { permissions?: RolePermission[] }).permissions = token.permissions as RolePermission[];
+        (session.user as { role?: UserRole }).role = (token.role as UserRole) || "student";
+        (session.user as { permissions?: RolePermission[] }).permissions = (token.permissions as RolePermission[]) || [];
       }
       return session;
     },

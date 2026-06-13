@@ -1,14 +1,24 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { BookOpen, Clock, Award, User, ChevronLeft, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { courses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
+import type { Course } from "@/types/course";
 
 export default function StudentPortalPage() {
   const { data: session } = useSession();
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    fetch("/api/courses")
+      .then((r) => r.json())
+      .then((data) => setCourses(data.courses || []))
+      .catch(() => logger.error("Failed to load courses"));
+  }, []);
 
   const enrolledCourses = courses.filter((_, i) => i < 3);
 

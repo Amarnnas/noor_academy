@@ -1,21 +1,29 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Users, Star, ShoppingCart, TrendingUp, DollarSign } from "lucide-react";
-import { courses } from "@/data/courses";
-import { instructors } from "@/data/instructors";
-import { testimonials } from "@/data/testimonials";
-
-const statCards = [
-  { icon: BookOpen, label: "إجمالي الدورات", value: courses.length, color: "from-teal-500 to-emerald-500", bg: "bg-teal-100 dark:bg-teal-900/50" },
-  { icon: Users, label: "إجمالي المدربين", value: instructors.length, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-100 dark:bg-emerald-900/50" },
-  { icon: Star, label: "آراء الطلاب", value: testimonials.length, color: "from-amber-500 to-orange-500", bg: "bg-amber-100 dark:bg-amber-900/50" },
-  { icon: ShoppingCart, label: "طلبات التسجيل", value: 24, color: "from-violet-500 to-purple-500", bg: "bg-violet-100 dark:bg-violet-900/50" },
-];
+import { BookOpen, Users, Star, ShoppingCart } from "lucide-react";
+import { logger } from "@/lib/logger";
+import type { Course } from "@/types/course";
 
 export default function DashboardPage() {
-  const totalStudents = courses.reduce((sum, c) => sum + c.studentsCount, 0);
-  const avgRating = (courses.reduce((sum, c) => sum + c.rating, 0) / courses.length).toFixed(1);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [orderCount, setOrderCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/admin/courses").then((r) => r.json()).then(setCourses).catch(() => logger.error("Failed to load courses"));
+    fetch("/api/admin/orders").then((r) => r.json()).then((d) => setOrderCount(Array.isArray(d) ? d.length : 0)).catch(() => {});
+  }, []);
+
+  const totalStudents = courses.reduce((sum: number, c: Course) => sum + (c.studentsCount || 0), 0);
+  const avgRating = courses.length ? (courses.reduce((sum: number, c: Course) => sum + (c.rating || 0), 0) / courses.length).toFixed(1) : "0.0";
+
+  const statCards = [
+    { icon: BookOpen, label: "إجمالي الدورات", value: courses.length, bg: "bg-teal-100 dark:bg-teal-900/50" },
+    { icon: Users, label: "إجمالي الطلاب", value: totalStudents.toLocaleString(), bg: "bg-emerald-100 dark:bg-emerald-900/50" },
+    { icon: Star, label: "متوسط التقييم", value: avgRating, bg: "bg-amber-100 dark:bg-amber-900/50" },
+    { icon: ShoppingCart, label: "طلبات التسجيل", value: orderCount, bg: "bg-violet-100 dark:bg-violet-900/50" },
+  ];
 
   return (
     <div className="space-y-8">

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { courses } from "@/data/courses";
+import { getAllCoursesAdmin } from "@/lib/firestore-admin";
+import { adminAuthIsConfigured } from "@/lib/firebase-admin";
+import { courses as fallbackCourses } from "@/data/courses";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
@@ -8,7 +10,7 @@ export async function GET(request: Request) {
     const category = searchParams.get("category") || "";
     const search = searchParams.get("search") || "";
 
-    let result = [...courses];
+    let result = adminAuthIsConfigured() ? await getAllCoursesAdmin() : fallbackCourses;
     if (category && category !== "الكل") result = result.filter((c) => c.category === category);
     if (search) {
       const q = search.toLowerCase();

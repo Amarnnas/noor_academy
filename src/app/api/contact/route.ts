@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createMessage } from "@/lib/firestore";
+import { createMessageAdmin } from "@/lib/firestore-admin";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "الحقول المطلوبة: name, email, message" }, { status: 400 });
     }
 
-    await createMessage({ name, email, phone: phone || "", message, read: false, createdAt: new Date().toISOString() });
+    await createMessageAdmin({ name, email, phone: phone || "", message, read: false, createdAt: new Date().toISOString() });
     logger.info("Contact message received", { name, email, phone });
     return NextResponse.json({ success: true, message: "تم استلام رسالتك بنجاح" });
   } catch (err) {

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Quote, Send } from "lucide-react";
-import { testimonials as initialTestimonials } from "@/data/testimonials";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,15 @@ const TESTIMONIAL_AVATAR_PLACEHOLDER = "https://images.pexels.com/photos/1515496
 
 export function TestimonialSlider() {
   const [current, setCurrent] = useState(0);
-  const [testimonials, setTestimonials] = useState(initialTestimonials);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const { data: session } = useSession();
+
+  useEffect(() => {
+    fetch("/api/testimonials")
+      .then((r) => r.json())
+      .then((data) => setTestimonials(data.testimonials || []))
+      .catch(() => logger.error("Failed to load testimonials"));
+  }, []);
   const [reviewForm, setReviewForm] = useState({ content: "", rating: 5, phone: "" });
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 

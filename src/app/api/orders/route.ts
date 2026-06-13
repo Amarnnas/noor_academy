@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOrder } from "@/lib/firestore";
+import { createOrderAdmin } from "@/lib/firestore-admin";
 import { logger } from "@/lib/logger";
 
 interface OrderBody {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "الحقول المطلوبة: courseId, studentName, studentEmail" }, { status: 400 });
     }
 
-    const orderId = await createOrder({
+    const orderId = await createOrderAdmin({
       courseId,
       courseTitle: courseTitle || "",
       studentName,

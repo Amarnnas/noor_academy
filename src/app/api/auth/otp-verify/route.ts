@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyOtp } from "@/lib/otp";
+import { verifyOtp, validateOtp } from "@/lib/otp";
 import { getOtpAttempts, incrementOtpAttempt, clearOtpAttempts } from "@/lib/firestore-admin";
 import { adminAuthIsConfigured } from "@/lib/firebase-admin";
 import { logger } from "@/lib/logger";
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       }
       await incrementOtpAttempt(email);
     }
-    const valid = await verifyOtp(email, code, type);
+    const valid = type === "reset" ? await validateOtp(email, code, type) : await verifyOtp(email, code, type);
     if (!valid) {
       return NextResponse.json({ error: "كود التحقق غير صحيح أو منتهي الصلاحية" }, { status: 400 });
     }

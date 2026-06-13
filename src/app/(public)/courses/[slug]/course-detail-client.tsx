@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { type Course } from "@/types/course";
-import { getInstructorById } from "@/data/instructors";
+import type { Instructor } from "@/types/instructor";
 import { formatCoursePrice } from "@/lib/currency";
 import { logger } from "@/lib/logger";
 
@@ -23,18 +23,36 @@ const levelColors: Record<string, "teal" | "emerald" | "default"> = {
 };
 
 export function CourseDetailClient({ course }: { course: Course }) {
-  const instructor = getInstructorById(course.instructorId);
+  const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [submitted, setSubmitted] = useState(false);
-  useEffect(() => {
-    logger.info("Course detail uses full-cover image and SDG price", { course: course.slug });
-  }, [course.slug]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (course.instructorId) {
+      fetch("/api/instructors")
+        .then((r) => r.json())
+        .then((data) => {
+          const found = (data.instructors || []).find((i: Instructor) => i.id === course.instructorId);
+          setInstructor(found || null);
+        })
+        .catch(() => logger.error("Failed to load instructor"));
+    }
+  }, [course.instructorId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.phone) return;
-    logger.info("Enrollment submitted", { course: course.slug, ...form });
-    setSubmitted(true);
+    try {
+      await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId: course.id, courseTitle: course.title, studentName: form.name, studentEmail: form.email, phone: form.phone }),
+      });
+      logger.info("Enrollment submitted", { course: course.slug, ...form });
+      setSubmitted(true);
+    } catch {
+      logger.error("Enrollment failed");
+    }
   };
 
   return (

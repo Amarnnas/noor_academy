@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Trash2, X } from "lucide-react";
-import { instructors as initialInstructors } from "@/data/instructors";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +20,20 @@ interface InstructorForm {
 }
 
 export default function DashboardInstructorsPage() {
-  const [instructors, setInstructors] = useState<Instructor[]>(initialInstructors);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<InstructorForm>({ name: "", title: "", bio: "", specialties: "", experience: "" });
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/instructors")
+      .then((r) => r.json())
+      .then((data) => setInstructors(data))
+      .catch(() => logger.error("Failed to load instructors"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const openEdit = (inst: Instructor) => {
     setEditingId(inst.id);
@@ -34,17 +42,39 @@ export default function DashboardInstructorsPage() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.title) { setFormError("يرجى ملء الاسم والمنصب"); return; }
-    setInstructors(instructors.map((i) => i.id === editingId ? { ...i, name: form.name, title: form.title, bio: form.bio, specialties: form.specialties.split("،").map((s) => s.trim()).filter(Boolean), experience: form.experience } : i));
-    logger.info("Instructor updated", { id: editingId, name: form.name });
-    setShowModal(false);
+    try {
+      const res = await fetch(`/api/admin/instructors/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name, title: form.title, bio: form.bio,
+          specialties: form.specialties.split("،").map((s) => s.trim()).filter(Boolean),
+          experience: form.experience,
+        }),
+      });
+      if (!res.ok) { setFormError("فشل الحفظ"); return; }
+      setInstructors(instructors.map((i) => i.id === editingId ? { ...i, name: form.name, title: form.title, bio: form.bio, specialties: form.specialties.split("،").map((s) => s.trim()).filter(Boolean), experience: form.experience } : i));
+      logger.info("Instructor updated", { id: editingId, name: form.name });
+      setShowModal(false);
+    } catch {
+      setFormError("فشل الحفظ");
+    }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    setInstructors(instructors.filter((i) => i.id !== id));
-    logger.info("Instructor deleted", { id, name });
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      const res = await fetch(`/api/admin/instructors/${id}`, { method: "DELETE" });
+      if (!res.ok) return;
+      setInstructors(instructors.filter((i) => i.id !== id));
+      logger.info("Instructor deleted", { id, name });
+    } catch {
+      logger.error("Failed to delete instructor");
+    }
   };
+
+  if (loading) return <div className="p-8 text-center text-[hsl(var(--muted-foreground))]">جاري التحميل...</div>;
 
   return (
     <div className="space-y-6">

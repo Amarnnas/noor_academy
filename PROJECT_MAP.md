@@ -12,185 +12,155 @@
 | Dark Mode | next-themes | 0.4.6 |
 | Icons | lucide-react | 1.17.0 |
 | UI Primitives | Radix UI | (avatar, dialog, dropdown, select, toast, tabs) |
-| Utility | clsx + tailwind-merge + cva | latest |
-| Auth | NextAuth (Auth.js) | 4.24.14 |
-| Auth/DB | Firebase (Firestore) | 11.7.1 |
-| RBAC | Custom (roles.ts + permissions.ts) | - |
+| Auth | NextAuth (Auth.js) v4 | 4.24.14 |
+| Database | Google Cloud Firestore (via Admin SDK) | firebase-admin 14 |
+| Password Hashing | bcryptjs | 3.0.3 |
+| Email (OTP) | nodemailer | 7.0.13 |
 | PDF | jsPDF + html2canvas | 4.2.1 / 1.4.1 |
-| Placeholder Images | SVG-based course thumbnails | - |
 | Hosting | Vercel | - |
-| DB (pending) | Google Cloud Firestore | - |
 
 ## [ARCHITECTURE]
 
 ```
-src/
-├── __tests__/                    # Test files
-├── AUTH_SETUP.md                 # Firebase + Google OAuth setup guide
-BRAND_REPORT.md               # Brand audit and image replacement report
-middleware.ts                 # NextAuth role-based route protection (/dashboard/*, /portal/*)
-├── vercel.json                   # Vercel deployment config
-├── .env.example                  # Environment variables template
+noor-academy/
+├── middleware.ts                 # Role-based route protection + teacher path restrictions
+├── firestore.rules              # Deny all client access (Admin SDK only)
+├── scripts/
+│   └── seed-firestore.ts        # Seed Firestore from static data (npx tsx)
 ├── src/
-│   ├── app/                          # Next.js App Router
-│   │   ├── (public)/                 # Public routes group
-│   │   │   ├── page.tsx              # Home (Hero + WhyUs + CoursesPreview + Testimonials + CTA)
-│   │   │   ├── courses/
-│   │   │   │   ├── page.tsx          # Course listing + filter/search
-│   │   │   │   └── [slug]/
-│   │   │   │       ├── page.tsx      # Server: unwraps params
-│   │   │   │       └── course-detail-client.tsx  # Client: detail + enroll form
-│   │   │   ├── about/page.tsx        # Vision, Mission, Goals
-│   │   │   ├── instructors/page.tsx  # Instructor cards
-│   │   │   ├── contact/page.tsx      # Contact form + info + Google Maps embed
+│   ├── app/
+│   │   ├── (public)/             # Public routes (no auth required)
+│   │   │   ├── page.tsx          # Home
+│   │   │   ├── courses/          # Listing + detail pages
+│   │   │   ├── about/
+│   │   │   ├── instructors/
+│   │   │   ├── contact/
 │   │   │   └── auth/
-│   │   │       ├── login/page.tsx    # Login form (NextAuth credentials + Google)
-│   │   │       ├── register/page.tsx # Registration form
-│   │   │       └── reset-password/page.tsx  # Password reset
-│   │   ├── (dashboard)/              # Admin (auth-guarded by middleware.ts)
+│   │   │       ├── login/        # Credentials + Google OAuth
+│   │   │       ├── register/     # Student registration → Firestore
+│   │   │       └── reset-password/ # 4-step flow: email → otp → newPassword → done
+│   │   ├── (dashboard)/          # Admin dashboard (admin/teacher)
 │   │   │   └── dashboard/
-│   │   │       ├── layout.tsx        # Sidebar + mobile responsive
-│   │   │       ├── page.tsx          # Stats overview
-│   │   │       ├── courses/page.tsx  # Courses table
-│   │   │       ├── instructors/page.tsx  # Instructor cards
-│   │   │       ├── testimonials/page.tsx # Testimonials list
-│   │   │       ├── orders/page.tsx   # Orders table with status badges
-│   │   │       ├── certificates/page.tsx # PDF certificate generator
-│   │   │       ├── admins/page.tsx   # Admin management (Firestore CRUD + permissions)
-│   │   │       └── messages/page.tsx # Contact messages list
-│   │   ├── api/                      # REST API handlers
-│   │   │   ├── auth/[...nextauth]/route.ts  # NextAuth handler
-│   │   │   ├── courses/route.ts      # GET /api/courses
-│   │   │   ├── instructors/route.ts  # GET /api/instructors
-│   │   │   ├── contact/route.ts      # POST /api/contact
-│   │   │   └── orders/route.ts       # POST /api/orders
-│   │   ├── not-found.tsx             # 404 page
-│   │   ├── layout.tsx                # Root: fonts, theme, auth, nav, footer, whatsapp
-│   │   └── globals.css               # Tailwind + CSS variables + dark mode
-├── components/
-│   ├── ui/                       # shadcn-style primitives (button, card, input, badge, avatar, label, select, textarea, toast, skeleton)
-│   ├── layout/                   # navbar, footer, theme-provider, whatsapp-button
-│   ├── shared/                   # section-heading
-│   │   └── social-icons.tsx      # Brand social media SVG icons
-│   ├── home/                     # hero, why-us, courses-preview, cta-section
-│   ├── testimonials/             # testimonial-slider
-│   ├── courses/                  # (empty, logic in page files)
-│   └── dashboard/                # (empty, logic in page files)
-├── lib/
-│   ├── utils.ts                  # cn() helper
-│   ├── constants.ts              # SITE config, BRAND_ASSETS, NAV_LINKS, SOCIAL_LINKS
-│   ├── currency.ts               # Course price currency label/formatter (SDG)
-│   ├── logger.ts                 # Async info/warn/error logger
-│   ├── firebase.ts               # Firebase config + Firestore export (hardcoded keys)
-│   ├── firestore.ts              # Firestore CRUD operations for all collections
-│   ├── permissions.ts            # Admin permission labels + check utilities
-│   └── auth.ts                   # NextAuth config (credentials + Google providers, Firestore admin lookup)
-├── types/
-│   ├── course.ts                 # Course, CurriculumItem
-│   ├── instructor.ts             # Instructor
-│   ├── testimonial.ts            # Testimonial
-│   ├── admin.ts                  # Admin, AdminPermission
-│   └── user.ts                   # User, AuthState, ContactMessage, Order
-└── data/                         # Static mock data
-    ├── courses.ts                # 6 courses + helper functions
-    ├── instructors.ts            # 5 instructors + helper
-    ├── testimonials.ts           # 6 testimonials
-    └── orders.ts                 # Initial orders with paid flag
+│   │   │       ├── layout.tsx    # Sidebar with permission-based link filtering
+│   │   │       ├── page.tsx      # Stats overview
+│   │   │       ├── courses/      # Fetch from /api/admin/courses
+│   │   │       ├── instructors/  # Fetch from /api/admin/instructors
+│   │   │       ├── testimonials/ # Fetch from /api/admin/testimonials
+│   │   │       ├── orders/       # Fetch from /api/admin/orders
+│   │   │       ├── messages/     # Fetch from /api/admin/messages
+│   │   │       ├── certificates/ # PDF certificate generator
+│   │   │       ├── admins/       # Fetch from /api/admin/admins
+│   │   │       └── profile/
+│   │   ├── (student)/            # Student portal
+│   │   │   └── portal/
+│   │   │       ├── page.tsx
+│   │   │       └── profile/
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   ├── [...nextauth]/     # NextAuth handler
+│   │       │   ├── register/          # POST → Admin SDK createStudent
+│   │       │   ├── otp-send/          # POST → Firestore OTP
+│   │       │   ├── otp-verify/        # POST (register consumes, reset validates)
+│   │       │   └── reset-password/    # POST → consume OTP + update password
+│   │       ├── admin/
+│   │       │   ├── admins/ + [id]/     # CRUD (admin only)
+│   │       │   ├── courses/ + [id]/    # CRUD (admin/post, admin+teacher/get)
+│   │       │   ├── instructors/ + [id]/ # CRUD (admin only)
+│   │       │   ├── testimonials/ + [id]/ # CRUD (admin/post, admin+teacher/get)
+│   │       │   ├── orders/ + [id]/     # List (admin only), update
+│   │       │   └── messages/ + [id]/   # List (admin only), mark-read, delete
+│   │       ├── courses/           # GET (public list)
+│   │       ├── instructors/       # GET (public list)
+│   │       ├── contact/           # POST → Admin SDK createMessage
+│   │       ├── orders/            # POST → Admin SDK createOrder
+│   │       └── upload/            # POST → Firebase Storage (fallback local)
+│   ├── components/
+│   │   ├── ui/                    # shadcn-style primitives
+│   │   ├── layout/                # navbar, footer, theme-provider, whatsapp-button
+│   │   ├── home/                  # hero, why-us, courses-preview, cta-section
+│   │   └── testimonials/          # testimonial-slider
+│   ├── lib/
+│   │   ├── firebase-admin.ts      # Admin SDK init (Firestore + Storage)
+│   │   ├── firestore-admin.ts     # All Admin SDK CRUD operations
+│   │   ├── firebase-storage.ts    # Upload/delete files to Firebase Storage
+│   │   ├── password.ts            # bcryptjs hash/verify wrappers
+│   │   ├── auth.ts                # NextAuth config (Admin SDK user lookup)
+│   │   ├── otp.ts + otp-store.ts  # OTP generation, send, verify (Firestore-backed)
+│   │   ├── permissions.ts + roles.ts # RBAC types and utilities
+│   │   ├── currency.ts            # SDG price formatter
+│   │   ├── logger.ts              # Async logger
+│   │   ├── constants.ts           # Site config, nav links, social links
+│   │   ├── utils.ts               # cn() helper
+│   │   ├── firebase.ts            # Client SDK init (unused, kept as reference)
+│   │   └── firestore.ts           # Client SDK CRUD (unused, kept as reference)
+│   ├── types/
+│   │   ├── course.ts, instructor.ts, testimonial.ts, admin.ts, user.ts, roles.ts
+│   └── data/                      # Static seed data (source for seed-firestore.ts)
+│       ├── courses.ts, instructors.ts, testimonials.ts, orders.ts
 ```
 
 ## [SYSTEM_FLOW]
 
 ```
-User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by role)
-                        → RootLayout (ThemeProvider + AuthProvider + RTL + Nav/Footer)
-  ├── (public) → Static pages (SSG) / Course detail (SSR with ISR)
-  │   ├── Home: Hero → WhyUs → CoursesPreview → Testimonials → CTA
-  │   ├── Courses: Filter/Search → CourseCard → Click → /courses/[slug]
-  │   │   └── [slug]: Detail + Curriculum + Instructor + Enroll Form
-  │   ├── About: Vision / Mission / Goals
-  │   ├── Instructors: Cards with specialties + rating
-  │   ├── Contact: Form (→ POST /api/contact) + Info + Google Maps embed
-  │   └── Auth: Login (NextAuth credentials/Google) / Register / Reset Password
-  ├── (student) → Protected by middleware.ts (authenticated users only)
-  │   ├── /portal → Student dashboard (enrolled courses, progress, certificates)
-  │   └── /portal/profile → Student profile edit (name, profile picture upload)
-  ├── (dashboard) → Protected by middleware.ts (admin/teacher only, redirects students to /auth/login?role=admin)
-  │   ├── / → Stats cards + quick overview + recent courses
-  │   ├── /courses → Data table (all courses, requires manage_courses)
-  │   ├── /instructors → Card grid (requires manage_instructors)
-  │   ├── /testimonials → Card list with star ratings (requires manage_testimonials)
-  │   ├── /orders → Table with status badges (requires manage_orders)
-  │   ├── /certificates → CertificateGenerator (jsPDF + html2canvas, requires manage_certificates)
-  │   ├── /messages → Message list with read/unread indicator (requires manage_messages)
-  │   ├── /admins → Admin CRUD table with permission checkboxes (requires manage_admins)
-  │   └── /profile → Profile edit (name, profile picture upload)
-  ├── /api/
-  │   ├── /auth/[...nextauth] → NextAuth (credentials + Google providers)
-  │   ├── /auth/otp-send → POST (send OTP code to email)
-  │   ├── /auth/otp-verify → POST (verify OTP code)
-  │   ├── /courses → GET (list + filter/search)
-  │   ├── /instructors → GET (list)
-  │   ├── /contact → POST (submit form)
-  │   ├── /orders → POST (create order)
-  │   └── /upload → POST (image upload for courses, profile, etc.)
-  └── Global: WhatsApp FAB, Dark mode toggle, Toast notifications
+User → Next.js Router → middleware.ts (Edge Runtime)
+                         → Guards /dashboard/* (admin/teacher only; teacher blocked from admins,instructors,orders,messages,certificates)
+                         → Guards /portal/* (authenticated only)
+                         → RootLayout (ThemeProvider + AuthProvider + RTL + Nav/Footer)
+
+Public pages (static) → Courses, Instructors, Contact, Auth (login/register/reset-password)
+
+Server API routes (all use Firebase Admin SDK):
+  ├── GET /api/courses, /api/instructors → Public read
+  ├── POST /api/contact → createMessageAdmin()
+  ├── POST /api/orders → createOrderAdmin()
+  ├── POST /api/auth/register → createStudent() with bcrypt
+  ├── POST /api/auth/otp-send → setOtpAdmin() in Firestore
+  ├── POST /api/auth/otp-verify → validateOtp() (reset) / consumeOtp() (register)
+  ├── POST /api/auth/reset-password → consumeOtp() + updateStudentPassword()
+  ├── POST /api/upload → uploadToStorage() (Firebase Storage, fallback local)
+
+Dashboard API routes (admin/teacher, server-side session check):
+  ├── GET/POST /api/admin/courses, instructors, testimonials, admins, orders, messages
+  └── PUT/DELETE /api/admin/*/[id]
+
+Dashboard pages (client components, fetch via API):
+  ├── Fetch data on mount via useEffect → setState
+  ├── CRUD operations via fetch() → API route → Admin SDK → Firestore
+  └── Permission links filtered in sidebar via hasSpecificPermission()
 ```
 
-## [ORPHANS & PENDING]
+## [KEY_SECURITY_DECISIONS]
 
-| Item | Status | Notes |
+| Decision | Rationale |
+|---|---|
+| Admin SDK for ALL server DB ops | Client SDK blocked by firestore.rules (deny all) |
+| bcryptjs for password hashing | saltRounds=10, no plaintext storage anywhere |
+| OTP stored in Firestore (not memory) | Survives Vercel serverless cold starts |
+| Rate limiting via Firestore | 5 attempts / 10 min per email, persisted |
+| OTP code returned only in dev without SMTP | Production without SMTP returns 503 |
+| Server session check on all admin API routes | Extends beyond client-side sidebar filtering |
+| middleware.ts blocks teachers from admin-only paths | Prevents direct URL access to unauthorized pages |
+| Firebase Storage with local fallback | Works without Storage config during development |
+
+## [REMAINING_ITEMS]
+
+| Item | Status | Priority |
 |---|---|---|
-| Firebase Firestore integration | DONE | src/lib/firebase.ts reads config from env vars only |
-| Google OAuth real keys | PENDING | Requires Google Cloud Console setup (see AUTH_SETUP.md) |
-| Student/Teacher/Admin RBAC | DONE | roles.ts with ROLE_PERMISSIONS, middleware.ts guards /dashboard and /portal |
-| Student portal page | DONE | /portal with enrolled courses view |
-| Admin + Teacher dashboard | DONE | Role-based sidebar filtering |
-| Dedicated login flows | DONE | Login page has Student/Admin tabs, role-aware redirect |
-| Firebase auth (hardcoded keys removed) | DONE | firebase.ts uses NEXT_PUBLIC_FIREBASE_* env vars |
-| Admin management (Firestore CRUD) | DONE | /dashboard/admins page with add/edit/delete, permission checkboxes |
-| Permission-based sidebar filtering | DONE | Sidebar links hidden per user permissions |
-| Firestore-based multi-role auth | DONE | auth.ts checks admins/teachers/students collections |
-| permissions.ts utility | DONE | Role-based permission checker (student/teacher/admin) |
-| OTP email verification system | DONE | src/lib/otp.ts + in-memory store + API routes |
-| SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars |
-| Context-aware course placeholders | DONE | Per-language SVG thumbnails (english, french, german, spanish, arabic, ielts) |
-| Instructor real images from PIC folder | DONE | Real photos for all 5 instructors from PIC/ |
-| Testimonial avatar images | REPLACED | Female avatars replaced with Pexels hijab photos (IDs 15154961, 8350562, 9473042), male avatars stay on randomuser.me |
-| Dashboard profile page | DONE | /dashboard/profile with name edit, profile picture upload |
-| Student portal profile page | DONE | /portal/profile with name edit, profile picture upload |
-| Image upload API | DONE | /api/upload accepts images up to 5MB, returns URL |
-| User registration flow | FIXED | Added `/api/auth/register` + user-store.ts to persist registered users in memory; credentials provider checks store |
-| Google sign-in error handling | FIXED | Uses `redirect: false`, catches errors, shows message; OAuth error query param detected on page load |
-| SVG instructor/testimonial placeholders | REPLACED | Replaced with real photos from PIC/ and local images |
-| Logo placeholder component | DONE | src/components/shared/logo-placeholder.tsx with symbol/full variants |
-| CourseThumbnail component | DONE | src/components/shared/course-thumbnail.tsx with category icons |
-| Brand report | DONE | BRAND_REPORT.md with image audit + recommendations |
-| AUTH_SETUP.md guide | DONE | Complete Firebase + Google OAuth + RBAC setup instructions |
-| Google button error handling | DONE | Loading state + catch block with user-facing error message |
-| PDF Certificate generation | DONE | jsPDF + html2canvas (scale 4) in /dashboard/certificates |
-| Google Maps embed | DONE | Real iframe with API key placeholder in contact page |
-| JWT/auth (NextAuth) | DONE | Credentials + Google providers, middleware guard |
-| API route handlers | DONE | GET /api/courses, /api/instructors, POST /api/contact, /api/orders |
-| Vercel deployment config | DONE | vercel.json with env variable references |
-| .env.example | DONE | Updated with ADMIN_EMAIL/ADMIN_PASSWORD + comments |
-| Logo in navbar/footer | DONE | Navbar uses BRAND_ASSETS.symbol; footer uses BRAND_ASSETS.full |
-| Test files | DONE | RBAC tests, placeholder image tests |
-| Loading skeletons | DONE | Skeleton component created |
-| Toast notifications | DONE | Toast component created |
-| SEO metadata | DONE | Root layout has template + description per page |
-| 404 page | DONE | Custom not-found page |
-| RTL layout | DONE | dir="rtl" on html, Cairo font |
-| Dark mode | DONE | next-themes with class strategy |
-| Responsive design | DONE | Mobile menu, sidebar collapse, grid breakpoints |
-| WhatsApp button | DONE | Fixed FAB with animation |
-| Accessibility | DONE | aria-labels, semantic HTML, sr-only texts |
-| Dashboard Courses CRUD | DONE | Add/edit/delete with modal form |
-| Dashboard Instructors edit/delete | DONE | Edit modal + delete button per card |
-| Dashboard Testimonials hide/delete | DONE | Toggle hidden state + delete button per card |
-| Dashboard Messages WhatsApp link | DONE | wa.me link button per message |
-| Certificate: validate + orientation + DPI | DONE | Student/payment validation, portrait/landscape, 300/72 DPI |
-| Orders management | DONE | Status selector, edit modal, paid flag, auto-generated IDs |
-| Course images 100% fill | DONE | object-cover without padding |
-| Instructor images rendered in Avatars | FIXED | Added `<AvatarImage>` to instructors page (public+dashboard) and testimonial-slider — was showing only initials |
-| Social media brand icons | DONE | Footer uses shared SVG brand icons |
-| Course currency (SDG) | DONE | Sudanese pound formatter |
+| Firebase Admin SDK env vars in .env.local | PENDING (user) | High |
+| Firestore seed (scripts/seed-firestore.ts) | PENDING (user) | High |
+| SMTP config for email OTP delivery | PENDING (user) | Medium |
+| Google OAuth real keys | PENDING (user) | Medium |
+| Firebase Storage bucket config | PENDING (user) | Low |
+| Public pages read from Firestore (instead of static data) | FUTURE | Low |
+| Student portal data from Firestore | FUTURE | Low |
+| next v16 / tailwind v4 upgrade | FUTURE | Low |
+
+## [PACKAGE_AUDIT]
+
+Outdated (safe minor/patch bumps, not applied):
+- @radix-ui/* packages (patch bumps + 1 minor for select)
+- lucide-react 1.17→1.18, react/react-dom 19.2.6→19.2.7
+- next 15.5.18→15.5.19
+
+Major upgrades requiring migration effort (deferred):
+- next 15→16, tailwindcss 3→4, eslint 9→10, typescript 5→6

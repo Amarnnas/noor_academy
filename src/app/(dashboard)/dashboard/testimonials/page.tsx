@@ -1,24 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, EyeOff, Trash2, Eye } from "lucide-react";
-import { testimonials as initialTestimonials } from "@/data/testimonials";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { logger } from "@/lib/logger";
 
+interface TestimonialData {
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
+  content: string;
+  rating: number;
+  hidden?: boolean;
+}
+
 export default function DashboardTestimonialsPage() {
-  const [testimonials, setTestimonials] = useState(initialTestimonials);
+  const [testimonials, setTestimonials] = useState<TestimonialData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleHide = (id: string) => {
-    setTestimonials(testimonials.map((t) => t.id === id ? { ...t, hidden: !t.hidden } : t));
+  useEffect(() => {
+    fetch("/api/admin/testimonials")
+      .then((r) => r.json())
+      .then((data) => setTestimonials(data))
+      .catch(() => logger.error("Failed to load testimonials"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const toggleHide = async (id: string) => {
     const t = testimonials.find((x) => x.id === id);
-    logger.info(t?.hidden ? "Testimonial unhidden" : "Testimonial hidden", { id });
+    if (!t) return;
+    try {
+      const res = await fetch(`/api/admin/testimonials/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hidden: !t.hidden }),
+      });
+      if (!res.ok) return;
+      setTestimonials(testimonials.map((x) => x.id === id ? { ...x, hidden: !x.hidden } : x));
+      logger.info(t.hidden ? "Testimonial unhidden" : "Testimonial hidden", { id });
+    } catch {
+      logger.error("Failed to toggle testimonial");
+    }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    setTestimonials(testimonials.filter((t) => t.id !== id));
-    logger.info("Testimonial deleted", { id, name });
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      const res = await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
+      if (!res.ok) return;
+      setTestimonials(testimonials.filter((t) => t.id !== id));
+      logger.info("Testimonial deleted", { id, name });
+    } catch {
+      logger.error("Failed to delete testimonial");
+    }
   };
+
+  if (loading) return <div className="p-8 text-center text-[hsl(var(--muted-foreground))]">جاري التحميل...</div>;
 
   return (
     <div className="space-y-6">

@@ -3,6 +3,7 @@ import { hashPassword } from "@/lib/password";
 import { logger } from "@/lib/logger";
 import type { Admin } from "@/types/admin";
 import type { Course } from "@/types/course";
+import type { Instructor } from "@/types/instructor";
 import type { Testimonial } from "@/types/testimonial";
 import type { ContactMessage, Order } from "@/types/user";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
@@ -130,6 +131,40 @@ export async function updateStudentPassword(email: string, newHashedPassword: st
   logger.info("firestore-admin: student password updated", { email });
 }
 
+// ─── Instructors ─────────────────────────────────────────
+export async function getAllInstructorsAdmin(): Promise<Instructor[]> {
+  if (!checkConfigured()) return [];
+  const snap = await adminDb!.collection("instructors").get();
+  return snap.docs.map((d) => docToData<Instructor>(d));
+}
+
+export async function getInstructorByIdAdmin(id: string): Promise<Instructor | null> {
+  if (!checkConfigured()) return null;
+  const snap = await adminDb!.collection("instructors").doc(id).get();
+  if (!snap.exists) return null;
+  return docToData<Instructor>(snap);
+}
+
+export async function createInstructorAdmin(data: Omit<Instructor, "id">): Promise<string> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  const ref = adminDb!.collection("instructors").doc();
+  await ref.set({ ...data, createdAt: FieldValue.serverTimestamp() });
+  logger.info("firestore-admin: instructor created", { id: ref.id, name: data.name });
+  return ref.id;
+}
+
+export async function updateInstructorAdmin(id: string, data: Partial<Instructor>): Promise<void> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  await adminDb!.collection("instructors").doc(id).update(data);
+  logger.info("firestore-admin: instructor updated", { id });
+}
+
+export async function deleteInstructorAdmin(id: string): Promise<void> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  await adminDb!.collection("instructors").doc(id).delete();
+  logger.info("firestore-admin: instructor deleted", { id });
+}
+
 // ─── Courses ─────────────────────────────────────────────
 export async function getAllCoursesAdmin(): Promise<Course[]> {
   if (!checkConfigured()) return [];
@@ -198,6 +233,14 @@ export async function getAllOrdersAdmin(): Promise<Order[]> {
   return snap.docs.map((d) => docToData<Order>(d));
 }
 
+export async function createOrderAdmin(data: Omit<Order, "id">): Promise<string> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  const ref = adminDb!.collection("orders").doc();
+  await ref.set({ ...data, createdAt: FieldValue.serverTimestamp() });
+  logger.info("firestore-admin: order created", { id: ref.id, student: data.studentName });
+  return ref.id;
+}
+
 export async function updateOrderAdmin(id: string, data: Partial<Order>): Promise<void> {
   if (!checkConfigured()) throw new Error("Firebase Admin not configured");
   await adminDb!.collection("orders").doc(id).update(data);
@@ -209,6 +252,14 @@ export async function getAllMessagesAdmin(): Promise<ContactMessage[]> {
   if (!checkConfigured()) return [];
   const snap = await adminDb!.collection("messages").orderBy("createdAt", "desc").get();
   return snap.docs.map((d) => docToData<ContactMessage>(d));
+}
+
+export async function createMessageAdmin(data: Omit<ContactMessage, "id">): Promise<string> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  const ref = adminDb!.collection("messages").doc();
+  await ref.set({ ...data, createdAt: FieldValue.serverTimestamp() });
+  logger.info("firestore-admin: message created", { id: ref.id, from: data.name });
+  return ref.id;
 }
 
 export async function markMessageReadAdmin(id: string): Promise<void> {
@@ -232,15 +283,22 @@ export async function setOtpAdmin(email: string, code: string, type: "register" 
   });
 }
 
-export async function consumeOtpAdmin(email: string, code: string, type: "register" | "reset"): Promise<boolean> {
+export async function checkOtpAdmin(email: string, code: string, type: "register" | "reset"): Promise<boolean> {
   if (!checkConfigured()) return false;
   const docId = `${email}_${type}`;
   const snap = await adminDb!.collection("otp_codes").doc(docId).get();
   if (!snap.exists) return false;
   const data = snap.data()!;
   if (data.expiresAt < Date.now()) { await snap.ref.delete(); return false; }
-  if (data.code !== code) return false;
-  await snap.ref.delete();
+  return data.code === code;
+}
+
+export async function consumeOtpAdmin(email: string, code: string, type: "register" | "reset"): Promise<boolean> {
+  if (!checkConfigured()) return false;
+  const valid = await checkOtpAdmin(email, code, type);
+  if (!valid) return false;
+  const docId = `${email}_${type}`;
+  await adminDb!.collection("otp_codes").doc(docId).delete();
   return true;
 }
 

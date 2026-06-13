@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { courses, getAllCategories, getCoursesByCategory } from "@/data/courses";
 import { formatCoursePrice } from "@/lib/currency";
 import { logger } from "@/lib/logger";
+import type { Course } from "@/types/course";
 
 const levelColors = {
   "مبتدئ": "teal" as const,
@@ -21,20 +21,31 @@ const levelColors = {
 };
 
 export default function CoursesPage() {
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<string[]>(["الكل"]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("الكل");
 
+  useEffect(() => {
+    fetch("/api/courses")
+      .then((r) => r.json())
+      .then((data) => {
+        setAllCourses(data.courses || []);
+        const cats = ["الكل", ...new Set<string>((data.courses || []).map((c: Course) => c.category))];
+        setCategories(cats);
+      })
+      .catch(() => logger.error("Failed to load courses"));
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = getCoursesByCategory(category);
+    let result = allCourses;
+    if (category && category !== "الكل") result = result.filter((c) => c.category === category);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter((c) => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
     }
     return result;
-  }, [search, category]);
-  useEffect(() => {
-    logger.info("Courses page uses full-cover images and SDG prices", { count: filtered.length });
-  }, [filtered.length]);
+  }, [search, category, allCourses]);
 
   return (
     <>
@@ -51,7 +62,7 @@ export default function CoursesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {getAllCategories().map((cat) => (
+                {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
               </SelectContent>

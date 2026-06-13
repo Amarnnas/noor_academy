@@ -1,5 +1,6 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -23,3 +24,8 @@ export function getAdminApp() {
 }
 
 export const adminDb = adminApp ? getFirestore(adminApp) : null;
+export const adminBucket = adminApp ? getStorage(adminApp).bucket(process.env.FIREBASE_STORAGE_BUCKET || undefined) : null;
+
+export function storageIsConfigured(): boolean {
+  return !!(adminBucket && adminAuthIsConfigured());
+}

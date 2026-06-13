@@ -1,12 +1,19 @@
 import { withAuth } from "next-auth/middleware";
 import type { NextRequest } from "next/server";
-import type { UserRole } from "@/types/roles";
+
+const ADMIN_ONLY_PATHS = [
+  "/dashboard/admins",
+  "/dashboard/instructors",
+  "/dashboard/orders",
+  "/dashboard/messages",
+  "/dashboard/certificates",
+];
 
 export default withAuth(
   function middleware(req: NextRequest) {
     const token = (req as unknown as { nextauth: { token: Record<string, unknown> } }).nextauth.token;
     const pathname = req.nextUrl.pathname;
-    const role = (token?.role as UserRole) || "student";
+    const role = (token?.role as string) || "student";
 
     if (pathname.startsWith("/dashboard") && role === "student") {
       const loginUrl = new URL("/auth/login", req.url);
@@ -15,9 +22,16 @@ export default withAuth(
       return Response.redirect(loginUrl);
     }
 
+    if (pathname.startsWith("/dashboard") && role === "teacher") {
+      for (const adminPath of ADMIN_ONLY_PATHS) {
+        if (pathname === adminPath || pathname.startsWith(adminPath + "/")) {
+          return Response.redirect(new URL("/dashboard", req.url));
+        }
+      }
+    }
+
     if (pathname.startsWith("/portal") && (role === "admin" || role === "teacher")) {
-      const dashboardUrl = new URL("/dashboard", req.url);
-      return Response.redirect(dashboardUrl);
+      return Response.redirect(new URL("/dashboard", req.url));
     }
   },
   {

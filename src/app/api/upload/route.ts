@@ -3,10 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { uploadToStorage } from "@/lib/firebase-storage";
+import { storageIsConfigured } from "@/lib/firebase-admin";
 import { logger } from "@/lib/logger";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE = 5 * 1024 * 1024;
 const UPLOAD_DIR = "public/images/courses";
 
 export async function POST(request: Request) {
@@ -31,18 +33,25 @@ export async function POST(request: Request) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-    const filepath = path.join(process.cwd(), UPLOAD_DIR, filename);
-
-    await mkdir(path.dirname(filepath), { recursive: true });
-
+    const filename = `courses/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
     const bytes = await file.arrayBuffer();
-    await writeFile(filepath, Buffer.from(bytes));
+    const buffer = Buffer.from(bytes);
 
-    const url = `/images/courses/${filename}`;
-    logger.info("Image uploaded", { filename, size: file.size });
+    if (storageIsConfigured()) {
+      const url = await uploadToStorage(buffer, filename, file.type);
+      if (url) {
+        logger.info("Image uploaded to Firebase Storage", { filename, size: file.size });
+        return NextResponse.json({ url, filename });
+      }
+    }
 
-    return NextResponse.json({ url, filename });
+    const filepath = path.join(process.cwd(), UPLOAD_DIR, filename.replace("courses/", ""));
+    await mkdir(path.dirname(filepath), { recursive: true });
+    await writeFile(filepath, buffer);
+    const localUrl = `/images/courses/${filename.replace("courses/", "")}`;
+    logger.info("Image uploaded locally", { filename, size: file.size });
+
+    return NextResponse.json({ url: localUrl, filename: filename.replace("courses/", "") });
   } catch (err) {
     logger.error("POST /api/upload failed", err);
     return NextResponse.json({ error: "فشل رفع الصورة" }, { status: 500 });

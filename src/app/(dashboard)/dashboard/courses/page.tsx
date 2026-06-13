@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Pencil, Trash2, Plus, X, Upload, ImageIcon } from "lucide-react";
-import { courses as initialCourses } from "@/data/courses";
+import { useState, useRef, useEffect } from "react";
+import { Pencil, Trash2, Plus, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { COURSE_CURRENCY, formatCoursePrice } from "@/lib/currency";
-
-const NEW_COURSE_IMAGE = "/images/placeholders/languages.svg";
 import { logger } from "@/lib/logger";
 import { type Course } from "@/types/course";
 
@@ -26,7 +23,8 @@ interface CourseForm {
 const emptyForm: CourseForm = { title: "", description: "", category: "", level: "", duration: "", price: "", image: "" };
 
 export default function DashboardCoursesPage() {
-  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CourseForm>(emptyForm);
@@ -34,8 +32,21 @@ export default function DashboardCoursesPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    fetch("/api/admin/courses")
+      .then((r) => r.json())
+      .then((data) => setCourses(data))
+      .catch(() => logger.error("Failed to load courses"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const openAdd = () => { setEditingId(null); setForm(emptyForm); setFormError(""); setShowModal(true); };
-  const openEdit = (c: Course) => { setEditingId(c.id); setForm({ title: c.title, description: c.description, category: c.category, level: c.level, duration: c.duration, price: String(c.price), image: c.image || "" }); setFormError(""); setShowModal(true); };
+  const openEdit = (c: Course) => {
+    setEditingId(c.id);
+    setForm({ title: c.title, description: c.description, category: c.category, level: c.level, duration: c.duration, price: String(c.price), image: c.image || "" });
+    setFormError("");
+    setShowModal(true);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,23 +70,81 @@ export default function DashboardCoursesPage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.category || !form.duration || !form.price) { setFormError("يرجى ملء جميع الحقول المطلوبة"); return; }
-    if (editingId) {
-      setCourses(courses.map((c) => c.id === editingId ? { ...c, title: form.title, description: form.description, category: form.category, level: form.level as Course["level"], duration: form.duration, price: Number(form.price), image: form.image || c.image } : c));
-      logger.info("Course updated", { id: editingId, title: form.title });
-    } else {
-      const newCourse: Course = { id: String(Date.now()), slug: form.title.replace(/\s+/g, "-").toLowerCase(), title: form.title, description: form.description, fullDescription: form.description, image: form.image || NEW_COURSE_IMAGE, category: form.category, level: form.level as Course["level"], duration: form.duration, studentsCount: 0, rating: 0, reviewsCount: 0, price: Number(form.price), objectives: [], curriculum: [], instructorId: "1" };
-      setCourses([...courses, newCourse]);
-      logger.info("Course added", { title: form.title });
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/admin/courses/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, level: form.level, price: Number(form.price) }),
+        });
+        if (!res.ok) { setFormError("فشل الحفظ"); return; }
+        setCourses(courses.map((c) => c.id === editingId ? { ...c, ...form, price: Number(form.price) } as Course : c));
+        logger.info("Course updated", { id: editingId, title: form.title });
+      } else {
+        const res = await fetch("/api/admin/courses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug: form.title.replace(/\s+/g, "-").toLowerCase(),
+            title: form.title,
+            description: form.description,
+            fullDescription: form.description,
+            image: form.image || "/images/placeholders/languages.svg",
+            category: form.category,
+            level: form.level,
+            duration: form.duration,
+            studentsCount: 0,
+            rating: 0,
+            reviewsCount: 0,
+            price: Number(form.price),
+            objectives: [],
+            curriculum: [],
+            instructorId: "1",
+          }),
+        });
+        if (!res.ok) { setFormError("فشل الإضافة"); return; }
+        const { id } = await res.json();
+        const newCourse: Course = {
+          id,
+          slug: form.title.replace(/\s+/g, "-").toLowerCase(),
+          title: form.title,
+          description: form.description,
+          fullDescription: form.description,
+          image: form.image || "/images/placeholders/languages.svg",
+          category: form.category,
+          level: form.level as Course["level"],
+          duration: form.duration,
+          studentsCount: 0,
+          rating: 0,
+          reviewsCount: 0,
+          price: Number(form.price),
+          objectives: [],
+          curriculum: [],
+          instructorId: "1",
+        };
+        setCourses([...courses, newCourse]);
+        logger.info("Course added", { title: form.title });
+      }
+      setShowModal(false);
+    } catch {
+      setFormError("فشل الحفظ");
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string, title: string) => {
-    setCourses(courses.filter((c) => c.id !== id));
-    logger.info("Course deleted", { id, title });
+  const handleDelete = async (id: string, title: string) => {
+    try {
+      const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
+      if (!res.ok) return;
+      setCourses(courses.filter((c) => c.id !== id));
+      logger.info("Course deleted", { id, title });
+    } catch {
+      logger.error("Failed to delete course");
+    }
   };
+
+  if (loading) return <div className="p-8 text-center text-[hsl(var(--muted-foreground))]">جاري التحميل...</div>;
 
   return (
     <div className="space-y-6">
@@ -106,7 +175,7 @@ export default function DashboardCoursesPage() {
                   </td>
                   <td className="p-4 text-[hsl(var(--muted-foreground))]">{course.level}</td>
                   <td className="p-4 text-[hsl(var(--muted-foreground))]">{course.duration}</td>
-                  <td className="p-4 text-[hsl(var(--muted-foreground))]">{course.studentsCount.toLocaleString()}</td>
+                  <td className="p-4 text-[hsl(var(--muted-foreground))]">{course.studentsCount?.toLocaleString()}</td>
                   <td className="p-4">
                     <span className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs">{course.rating}</span>
                   </td>

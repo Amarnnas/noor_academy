@@ -1,13 +1,24 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, Users, BookOpen } from "lucide-react";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { instructors } from "@/data/instructors";
+import { logger } from "@/lib/logger";
+import type { Instructor } from "@/types/instructor";
 
 export default function InstructorsPage() {
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+
+  useEffect(() => {
+    fetch("/api/instructors")
+      .then((r) => r.json())
+      .then((data) => setInstructors(data.instructors || []))
+      .catch(() => logger.error("Failed to load instructors"));
+  }, []);
+
   return (
     <>
       <section className="py-16 bg-gradient-to-b from-teal-50 to-white dark:from-teal-950 dark:to-background">
