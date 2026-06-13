@@ -155,7 +155,7 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
 | SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars |
 | Context-aware course placeholders | DONE | Per-language SVG thumbnails (english, french, german, spanish, arabic, ielts) |
 | Instructor real images from PIC folder | DONE | Real photos for all 5 instructors from PIC/ |
-| Testimonial real images | DONE | Real photos for all 6 testimonials |
+| Testimonial avatar images | REPLACED | Personal images replaced with randomuser.me external URLs |
 | Dashboard profile page | DONE | /dashboard/profile with name edit, profile picture upload |
 | Student portal profile page | DONE | /portal/profile with name edit, profile picture upload |
 | Image upload API | DONE | /api/upload accepts images up to 5MB, returns URL |
