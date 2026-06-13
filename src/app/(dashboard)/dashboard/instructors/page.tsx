@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Pencil, Trash2, X } from "lucide-react";
 import { instructors as initialInstructors } from "@/data/instructors";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,7 @@ export default function DashboardInstructorsPage() {
           <div key={instructor.id} className="rounded-2xl border bg-[hsl(var(--card))] p-5">
             <div className="flex items-start gap-4">
               <Avatar className="h-14 w-14 border-2 border-teal-200 dark:border-teal-800">
+                <AvatarImage src={instructor.image} alt={instructor.name} />
                 <AvatarFallback className="bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300">{instructor.name.slice(0, 2)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">

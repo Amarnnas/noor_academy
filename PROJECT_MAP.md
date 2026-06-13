@@ -189,5 +189,6 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
 | Certificate: validate + orientation + DPI | DONE | Student/payment validation, portrait/landscape, 300/72 DPI |
 | Orders management | DONE | Status selector, edit modal, paid flag, auto-generated IDs |
 | Course images 100% fill | DONE | object-cover without padding |
+| Instructor images rendered in Avatars | FIXED | Added `<AvatarImage>` to instructors page (public+dashboard) and testimonial-slider — was showing only initials |
 | Social media brand icons | DONE | Footer uses shared SVG brand icons |
 | Course currency (SDG) | DONE | Sudanese pound formatter |

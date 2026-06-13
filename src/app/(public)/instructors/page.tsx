@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Star, Users, BookOpen } from "lucide-react";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { instructors } from "@/data/instructors";
 
@@ -32,6 +32,7 @@ export default function InstructorsPage() {
                 className="rounded-2xl border bg-[hsl(var(--card))] p-6 hover:shadow-lg transition-all duration-300 text-center"
               >
                 <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-teal-200 dark:border-teal-800">
+                  <AvatarImage src={instructor.image} alt={instructor.name} />
                   <AvatarFallback className="bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 text-xl">
                     {instructor.name.slice(0, 2)}
                   </AvatarFallback>

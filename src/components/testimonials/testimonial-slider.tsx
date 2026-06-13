@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Quote, Send } from "lucide-react";
 import { testimonials as initialTestimonials } from "@/data/testimonials";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,6 +70,7 @@ export function TestimonialSlider() {
               </div>
               <div className="flex items-center justify-center gap-3">
                 <Avatar className="h-12 w-12 border-2 border-teal-200 dark:border-teal-800">
+                  <AvatarImage src={t[current].avatar} alt={t[current].name} />
                   <AvatarFallback className="bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 text-sm">
                     {t[current].name.slice(0, 2)}
                   </AvatarFallback>
