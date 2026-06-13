@@ -112,7 +112,8 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
   │   ├── Contact: Form (→ POST /api/contact) + Info + Google Maps embed
   │   └── Auth: Login (NextAuth credentials/Google) / Register / Reset Password
   ├── (student) → Protected by middleware.ts (authenticated users only)
-  │   └── /portal → Student dashboard (enrolled courses, progress, certificates)
+  │   ├── /portal → Student dashboard (enrolled courses, progress, certificates)
+  │   └── /portal/profile → Student profile edit (name, profile picture upload)
   ├── (dashboard) → Protected by middleware.ts (admin/teacher only, redirects students to /auth/login?role=admin)
   │   ├── / → Stats cards + quick overview + recent courses
   │   ├── /courses → Data table (all courses, requires manage_courses)
@@ -121,7 +122,8 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
   │   ├── /orders → Table with status badges (requires manage_orders)
   │   ├── /certificates → CertificateGenerator (jsPDF + html2canvas, requires manage_certificates)
   │   ├── /messages → Message list with read/unread indicator (requires manage_messages)
-  │   └── /admins → Admin CRUD table with permission checkboxes (requires manage_admins)
+  │   ├── /admins → Admin CRUD table with permission checkboxes (requires manage_admins)
+  │   └── /profile → Profile edit (name, profile picture upload)
   ├── /api/
   │   ├── /auth/[...nextauth] → NextAuth (credentials + Google providers)
   │   ├── /auth/otp-send → POST (send OTP code to email)
@@ -129,7 +131,8 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
   │   ├── /courses → GET (list + filter/search)
   │   ├── /instructors → GET (list)
   │   ├── /contact → POST (submit form)
-  │   └── /orders → POST (create order)
+  │   ├── /orders → POST (create order)
+  │   └── /upload → POST (image upload for courses, profile, etc.)
   └── Global: WhatsApp FAB, Dark mode toggle, Toast notifications
 ```
 
@@ -151,7 +154,12 @@ User → Next.js Router → middleware.ts (guard /dashboard/* and /portal/* by r
 | OTP email verification system | DONE | src/lib/otp.ts + in-memory store + API routes |
 | SMTP email sending (nodemailer) | PENDING | Requires SMTP_HOST/SMTP_USER/SMTP_PASS in env vars |
 | Context-aware course placeholders | DONE | Per-language SVG thumbnails (english, french, german, spanish, arabic, ielts) |
-| SVG instructor/testimonial placeholders | DONE | Replaced generic logo with category-specific SVGs |
+| Instructor real images from PIC folder | DONE | Real photos for all 5 instructors from PIC/ |
+| Testimonial real images | DONE | Real photos for all 6 testimonials |
+| Dashboard profile page | DONE | /dashboard/profile with name edit, profile picture upload |
+| Student portal profile page | DONE | /portal/profile with name edit, profile picture upload |
+| Image upload API | DONE | /api/upload accepts images up to 5MB, returns URL |
+| SVG instructor/testimonial placeholders | REPLACED | Replaced with real photos from PIC/ and local images |
 | Logo placeholder component | DONE | src/components/shared/logo-placeholder.tsx with symbol/full variants |
 | CourseThumbnail component | DONE | src/components/shared/course-thumbnail.tsx with category icons |
 | Brand report | DONE | BRAND_REPORT.md with image audit + recommendations |

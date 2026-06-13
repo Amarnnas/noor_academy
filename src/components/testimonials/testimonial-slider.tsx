@@ -14,7 +14,7 @@ import { useSession } from "next-auth/react";
 import { logger } from "@/lib/logger";
 import { type Testimonial } from "@/types/testimonial";
 
-const TESTIMONIAL_AVATAR_PLACEHOLDER = "/images/placeholders/testimonial.svg";
+const TESTIMONIAL_AVATAR_PLACEHOLDER = "/images/testimonials/testimonial-1.jpg";
 
 export function TestimonialSlider() {
   const [current, setCurrent] = useState(0);

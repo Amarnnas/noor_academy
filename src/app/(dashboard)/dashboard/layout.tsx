@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BookOpen, Users, Star, ShoppingCart, MessageSquare, Award, Shield, Menu, X, LogOut, GraduationCap } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Star, ShoppingCart, MessageSquare, Award, Shield, Menu, X, LogOut, GraduationCap, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasSpecificPermission } from "@/lib/permissions";
 import type { RolePermission } from "@/types/roles";
@@ -26,6 +26,7 @@ const sidebarLinks: SidebarLink[] = [
   { icon: Award, label: "الشهادات", href: "/dashboard/certificates", permission: "manage_certificates" },
   { icon: MessageSquare, label: "الرسائل", href: "/dashboard/messages", permission: "manage_messages" },
   { icon: Shield, label: "المشرفون", href: "/dashboard/admins", permission: "manage_admins" },
+  { icon: User, label: "الملف الشخصي", href: "/dashboard/profile" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

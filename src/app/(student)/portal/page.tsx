@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Clock, Award, User, ChevronLeft } from "lucide-react";
+import { BookOpen, Clock, Award, User, ChevronLeft, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { courses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,16 @@ export default function StudentPortalPage() {
               <h1 className="text-2xl font-bold">بوابة الطالب</h1>
               <p className="text-[hsl(var(--muted-foreground))]">مرحباً {session?.user?.name || "طالب"}</p>
             </div>
-            <Link href="/courses">
-              <Button variant="outline" className="gap-2"><BookOpen className="h-4 w-4" />تصفح الدورات</Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/portal/profile">
+                <Button variant="ghost" size="icon" className="rounded-full" title="الملف الشخصي">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/courses">
+                <Button variant="outline" className="gap-2"><BookOpen className="h-4 w-4" />تصفح الدورات</Button>
+              </Link>
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">

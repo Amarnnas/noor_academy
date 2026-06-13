@@ -1,14 +1,12 @@
 import { Instructor } from "@/types/instructor";
 
-export const INSTRUCTOR_PLACEHOLDER = "/images/placeholders/instructor.svg";
-
 export const instructors: Instructor[] = [
   {
     id: "1",
     name: "  أ. نور الدين ",
     title: "مدرب لغة إنجليزية معتمد",
     bio: "دكتوراه في تدريس اللغة الإنجليزية من جامعة أكسفورد. خبرة أكثر من 15 عاماً في تدريس الإنجليزية لغير الناطقين بها. حاصل على شهادة CELTA وDELTA.",
-    image: INSTRUCTOR_PLACEHOLDER,
+    image: "/images/instructors/instructor-1.jpg",
     specialties: ["الإنجليزية", "IELTS", "TOEFL", "الإنجليزية للأعمال"],
     experience: "7 سنة",
     rating: 4.9,
@@ -19,7 +17,7 @@ export const instructors: Instructor[] = [
     name: "سارة بوعبد الله",
     title: "مدربة لغة فرنسية",
     bio: "حاصلة على ماجستير في اللغة الفرنسية وآدابها من جامعة السوربون. متخصصة في تدريس الفرنسية كلغة أجنبية (FLE) بأكثر من 10 سنوات خبرة.",
-    image: INSTRUCTOR_PLACEHOLDER,
+    image: "/images/instructors/instructor-2.jpg",
     specialties: ["الفرنسية", "FLE", "الفرنسية للأعمال", "التحضير لـ DELF"],
     experience: "10 سنوات",
     rating: 4.8,
@@ -30,7 +28,7 @@ export const instructors: Instructor[] = [
     name: "كريم فريد",
     title: "مدرب لغة ألمانية",
     bio: "خريج جامعة برلين الحرة في تدريس اللغة الألمانية. معتمد من معهد جوته في المستويات A1-C2. خبرة 8 سنوات في تدريس الألمانية للعرب.",
-    image: INSTRUCTOR_PLACEHOLDER,
+    image: "/images/instructors/instructor-3.jpg",
     specialties: ["الألمانية", "Goethe", "TestDaF", "الألمانية للأغراض الأكاديمية"],
     experience: "8 سنوات",
     rating: 4.7,
@@ -41,7 +39,7 @@ export const instructors: Instructor[] = [
     name: "ماريا غارسيا",
     title: "مدربة لغة إسبانية",
     bio: "ناطقة أصلية للإسبانية من مدريد. ماجستير في تدريس الإسبانية كلغة أجنبية من جامعة كمبلوتنسي. خبرة 7 سنوات في تدريس الإسبانية.",
-    image: INSTRUCTOR_PLACEHOLDER,
+    image: "/images/instructors/instructor-4.jpg",
     specialties: ["الإسبانية", "DELE", "الإسبانية للسفر", "ثقافة أمريكا اللاتينية"],
     experience: "7 سنوات",
     rating: 4.6,
@@ -52,7 +50,7 @@ export const instructors: Instructor[] = [
     name: "د. عبد الرحمن الزهراني",
     title: "مدرب لغة عربية للناطقين بغيرها",
     bio: "دكتوراه في اللغويات التطبيقية من جامعة أم القرى. متخصص في تعليم العربية للناطقين بغيرها، معتمد من معهد الملك عبد الله لتعليم العربية.",
-    image: INSTRUCTOR_PLACEHOLDER,
+    image: "/images/instructors/instructor-5.jpg",
     specialties: ["العربية", "النحو", "الخط العربي", "الثقافة الإسلامية"],
     experience: "12 سنة",
     rating: 4.8,
