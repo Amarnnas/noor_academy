@@ -8,8 +8,8 @@ import type { Testimonial } from "@/types/testimonial";
 import type { ContactMessage, Order } from "@/types/user";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
-function docToData<T>(snap: { id: string; data: () => Record<string, unknown> }): T {
-  return { id: snap.id, ...snap.data() } as T;
+function docToData<T>(snap: { id: string; data: () => Record<string, unknown> | undefined }): T {
+  return { id: snap.id, ...(snap.data() || {}) } as T;
 }
 
 function checkConfigured(): boolean {
@@ -129,6 +129,22 @@ export async function updateStudentPassword(email: string, newHashedPassword: st
   if (snap.empty) throw new Error("Student not found");
   await snap.docs[0].ref.update({ password: newHashedPassword });
   logger.info("firestore-admin: student password updated", { email });
+}
+
+export async function updateTeacherPassword(email: string, newHashedPassword: string): Promise<void> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  const snap = await adminDb!.collection("teachers").where("email", "==", email).limit(1).get();
+  if (snap.empty) throw new Error("Teacher not found");
+  await snap.docs[0].ref.update({ password: newHashedPassword });
+  logger.info("firestore-admin: teacher password updated", { email });
+}
+
+export async function updateAdminPassword(email: string, newHashedPassword: string): Promise<void> {
+  if (!checkConfigured()) throw new Error("Firebase Admin not configured");
+  const snap = await adminDb!.collection("admins").where("email", "==", email).limit(1).get();
+  if (snap.empty) throw new Error("Admin not found");
+  await snap.docs[0].ref.update({ password: newHashedPassword });
+  logger.info("firestore-admin: admin password updated", { email });
 }
 
 // ─── Instructors ─────────────────────────────────────────

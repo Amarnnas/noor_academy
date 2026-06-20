@@ -17,7 +17,7 @@ export default function DashboardOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ studentName: "", studentEmail: "", phone: "", status: "pending" as const, paid: false });
+  const [form, setForm] = useState({ studentName: "", studentEmail: "", phone: "", status: "pending" as "pending" | "confirmed" | "cancelled", paid: false });
   const [formError, setFormError] = useState("");
 
   useEffect(() => { loadOrders(); }, []);
@@ -118,13 +118,7 @@ export default function DashboardOrdersPage() {
                 <Label htmlFor="regPhone">رقم الجوال</Label>
                 <Input id="regPhone" type="tel" dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+9665XXXXXXXX" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="regCourse">الدورة</Label>
-                <select id="regCourse" value={form.courseId} onChange={(e) => setForm({ ...form, courseId: e.target.value })} className="flex h-11 w-full rounded-xl border border-[hsl(var(--input))] bg-transparent px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]">
-                  <option value="">اختر دورة</option>
-                  {courses.map((c) => (<option key={c.id} value={c.id}>{c.title}</option>))}
-                </select>
-              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="regStatus">حالة الطالب</Label>
                 <select id="regStatus" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as "pending" | "confirmed" | "cancelled" })} className="flex h-11 w-full rounded-xl border border-[hsl(var(--input))] bg-transparent px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]">

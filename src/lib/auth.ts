@@ -32,8 +32,8 @@ export const authOptions: NextAuthOptions = {
                   id: adminData.id,
                   name: adminData.name,
                   email: adminData.email,
-                  role: adminData.role || "admin",
-                  permissions: adminData.permissions || ALL_ROLE_PERMISSIONS.admin,
+                  role: (adminData.role || "admin") as UserRole,
+                  permissions: (adminData.permissions || ALL_ROLE_PERMISSIONS.admin) as RolePermission[],
                 };
               }
             }

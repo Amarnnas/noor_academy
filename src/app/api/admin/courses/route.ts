@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getAllCoursesAdmin, createCourseAdmin } from "@/lib/firestore-admin";
+import { hasSpecificPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user.role !== "admin" && session.user.role !== "teacher")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_courses")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   try {
@@ -20,7 +21,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "admin") {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_courses")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   try {

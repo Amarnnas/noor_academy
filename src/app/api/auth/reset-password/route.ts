@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStudentByEmail, updateStudentPassword } from "@/lib/firestore-admin";
+import { getStudentByEmail, getTeacherByEmail, getAdminByEmail, updateStudentPassword, updateTeacherPassword, updateAdminPassword } from "@/lib/firestore-admin";
 import { validateOtp, consumeOtp } from "@/lib/otp";
 import { hashPassword } from "@/lib/password";
 import { logger } from "@/lib/logger";
@@ -14,7 +14,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }, { status: 400 });
     }
     const student = await getStudentByEmail(email);
-    if (!student) {
+    const teacher = student ? null : await getTeacherByEmail(email);
+    const admin = teacher ? null : await getAdminByEmail(email);
+    const account = student || teacher || admin;
+    if (!account) {
       return NextResponse.json({ error: "البريد الإلكتروني غير مسجل" }, { status: 404 });
     }
     const valid = await validateOtp(email, code, "reset");
@@ -22,7 +25,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "كود التحقق غير صحيح أو منتهي الصلاحية" }, { status: 400 });
     }
     const hashed = await hashPassword(password);
-    await updateStudentPassword(email, hashed);
+    if (admin) {
+      await updateAdminPassword(email, hashed);
+    } else if (teacher) {
+      await updateTeacherPassword(email, hashed);
+    } else {
+      await updateStudentPassword(email, hashed);
+    }
     await consumeOtp(email, code, "reset");
     logger.info("Password reset completed", { email });
     return NextResponse.json({ success: true });

@@ -9,7 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session || !hasSpecificPermission((session.user as any)?.permissions, "manage_admins")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_admins")) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
   }
   const admins = await getAllAdmins();
@@ -18,7 +18,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || !hasSpecificPermission((session.user as any)?.permissions, "manage_admins")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_admins")) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
   }
   try {

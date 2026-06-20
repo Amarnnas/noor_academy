@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || !hasSpecificPermission((session.user as any)?.permissions, "manage_admins")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_admins")) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
   }
   try {
@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       updateData.password = password;
     }
     if (permissions) updateData.permissions = permissions;
-    await updateAdmin(id, updateData as any);
+    await updateAdmin(id, updateData);
     logger.info("API: admin updated", { id });
     return NextResponse.json({ success: true });
   } catch (err) {
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || !hasSpecificPermission((session.user as any)?.permissions, "manage_admins")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_admins")) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
   }
   try {

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { updateInstructorAdmin, deleteInstructorAdmin } from "@/lib/firestore-admin";
+import { hasSpecificPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "admin") {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_instructors")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   const { id } = await params;
@@ -22,7 +23,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "admin") {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_instructors")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   const { id } = await params;

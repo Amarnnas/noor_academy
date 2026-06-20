@@ -8,13 +8,13 @@ import type { NextRequest } from "next/server";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || !hasSpecificPermission((session.user as any)?.permissions, "manage_orders")) {
+  if (!session || !hasSpecificPermission(session.user?.permissions, "manage_orders")) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
   }
   const { id } = await params;
   const body = await req.json();
   const { status, paid } = body;
-  await updateOrderAdmin(id, { status, paid } as any);
+  await updateOrderAdmin(id, { status, paid });
   logger.info("API: order updated", { id, status, paid });
   return NextResponse.json({ success: true });
 }
