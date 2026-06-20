@@ -34,6 +34,8 @@ export function TestimonialSlider() {
   const next = () => setCurrent((c) => (c + 1) % t.length);
   const prev = () => setCurrent((c) => (c - 1 + t.length) % t.length);
 
+  if (t.length === 0) return null;
+
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewForm.content || !reviewForm.phone) return;
